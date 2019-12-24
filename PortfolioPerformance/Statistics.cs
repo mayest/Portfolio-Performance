@@ -32,7 +32,7 @@ namespace PortfolioPerformance
         public static double Covariance_S(double[] data1, double[] data2) //Sample Covariance
         {
             double n = data1.Length;
-            return Covar_P(data1, data2)*n/(n-1);
+            return Covar_P(data1, data2)*n/(n-1); //adjust population covariance to sample covariance
         }
         public static double Variance_P(double[] data) //Population Variance
         {
@@ -49,7 +49,7 @@ namespace PortfolioPerformance
         public static double Variance_S(double[] data) //Sample Variance
         {
             double n = data.Length;
-            return Variance_P(data) * n / (n - 1);
+            return Variance_P(data) * n / (n - 1); //adjust population variance to sample variance
         }
 
         public static double StdDev_P(double[] data) //Population Standard Deviation
@@ -60,10 +60,10 @@ namespace PortfolioPerformance
         public static double StdDev_S(double[] data) //Sample Standard Deviation
         {
             double n = data.Length;
-            return StdDev_P(data)*Math.Pow(n/(n-1),0.5);
+            return StdDev_P(data)*Math.Pow(n/(n-1),0.5); //adjust population standard deviation to sample standard deviation
         }
 
-        public static double[] ArrayDiff(double[] arr1, double[] arr2) //Calculate elementwise difference between two equal-length arrays
+        public static double[] ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise difference between two equal-length arrays
         {
             double[] diff = new double[arr1.Length];
             for (int i = 0; i < arr1.Length; i++)
