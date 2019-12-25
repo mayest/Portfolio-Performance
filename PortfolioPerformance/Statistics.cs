@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ExcelDna.Integration;
 
 namespace PortfolioPerformance
 {
@@ -32,8 +33,9 @@ namespace PortfolioPerformance
         public static double Covariance_S(double[] data1, double[] data2) //Sample Covariance
         {
             double n = data1.Length;
-            return Covar_P(data1, data2)*n/(n-1); //adjust population covariance to sample covariance
+            return Covar_P(data1, data2) * n / (n - 1); //adjust population covariance to sample covariance
         }
+
         public static double Variance_P(double[] data) //Population Variance
         {
             double ssq = 0; // sum of squares
@@ -60,18 +62,78 @@ namespace PortfolioPerformance
         public static double StdDev_S(double[] data) //Sample Standard Deviation
         {
             double n = data.Length;
-            return StdDev_P(data)*Math.Pow(n/(n-1),0.5); //adjust population standard deviation to sample standard deviation
+            return
+                StdDev_P(data) *
+                Math.Pow(n / (n - 1), 0.5); //adjust population standard deviation to sample standard deviation
         }
 
-        public static double[] ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise difference between two equal-length arrays
+        public static double[]
+            ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise difference between two equal-length arrays
         {
             double[] diff = new double[arr1.Length];
             for (int i = 0; i < arr1.Length; i++)
             {
                 diff[i] = arr1[i] - arr2[i];
             }
+
             return diff;
         }
 
+        public static double[] ObjToDouble(object[] arr) //Convert an object[] to double[]
+        {
+            int n = arr.Length;
+            double[] retArray = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                retArray[i] = (double) arr[i];
+            }
+
+            return retArray;
+        }
+
+        public static object[] DoubleToObject(double[] arr) //Convert an double[] to object[]
+        {
+            int n = arr.Length;
+            object[] retArray = new object[n];
+            for (int i = 0; i < n; i++)
+            {
+                retArray[i] = arr[i];
+            }
+
+            return retArray;
+        }
+
+
+        public static object[] ExtendRiskFreeRateArray(object[] rfArray, int length)
+            //Extend the risk-free rate array to the given length
+        {
+            object[] newRf = new object[length]; //New temporary array
+
+            // Check if riskFreeReturns is given or not. If not, set it to 0 for each period.
+            // If it is only a single number, then set it to that number for each period.
+            if (rfArray.Length != length)
+            {
+                double tempRf;
+                if (rfArray[0] is ExcelMissing)
+                {
+                    tempRf = 0.0d; //Set to 0 if it is missing
+                }
+                else
+                {
+                    tempRf = (double) rfArray[0]; //Otherwise, set it to the given number
+                }
+
+                for (int i = 0; i < newRf.Length; i++)
+                {
+                    newRf[i] = tempRf;
+                }
+
+                return newRf;
+            }
+            else
+            {
+                return rfArray;
+            }
+        }
     }
 }

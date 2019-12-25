@@ -108,7 +108,14 @@ namespace PortfolioPerformance
                     double benchMean = benchReturns.Average();
                     double[] diffArray = Statistics.ArrayDiff(assetReturns, benchReturns);
                     double trackingError = Statistics.StdDev_S(diffArray);
-                    return diffArray.Average() / trackingError;
+                    if (Math.Abs(trackingError) > 0.0d)
+                    {
+                        return diffArray.Average() / trackingError;
+                    }
+                    else
+                    {
+                        return ExcelError.ExcelErrorDiv0;
+                    }
                 }
                 catch (Exception)
                 {
@@ -151,11 +158,10 @@ namespace PortfolioPerformance
         //Calculates the Treynor Index, which is: (average asset return less the average risk-free return)/beta of the asset
         public static object TreynorIndex([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
             double[] assetReturns,
-            [ExcelArgument(Name = "Risk-free Asset Returns", Description = "Range of Risk-free Returns", AllowReference = false)]
-            double[] riskFreeReturns,
-            [ExcelArgument(Name = "Asset Beta", Description = "The beta of the asset", AllowReference = false)] double assetBeta)
+            [ExcelArgument(Name = "Asset Beta", Description = "The beta of the asset", AllowReference = false)] object assetBeta, [ExcelArgument(Name = "Risk-free Asset Returns", Description = "Range of Risk-free Returns", AllowReference = false)]
+            object[] riskFreeReturns)
         {
-            if (ExcelDnaUtil.IsInFunctionWizard() && riskFreeReturns.Length < assetReturns.Length)
+            if (ExcelDnaUtil.IsInFunctionWizard() && assetBeta is ExcelMissing)
             //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
             //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
             {
@@ -165,16 +171,24 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double assetMean = assetReturns.Average();
-                    if (riskFreeReturns is null) //If no risk-free rates, then set rfMean to 0
+                    if (assetBeta is ExcelMissing)
                     {
-                        double rfMean = 0;
-                        return (assetMean - rfMean) / assetBeta;
+                        return ExcelError.ExcelErrorValue;
                     }
                     else
                     {
-                        double rfMean = riskFreeReturns.Average();
-                        return (assetMean - rfMean) / assetBeta;
+                        double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                        double assetMean = assetReturns.Average();
+                        double rfMean = rf.Average();
+                        if (Math.Abs((double)assetBeta) > 0.0d)
+                        {
+                            return (assetMean - rfMean) / (double)assetBeta;
+                        }
+                        else
+                        {
+                            return ExcelError.ExcelErrorDiv0;
+                        }
+
                     }
                 }
                 catch (Exception)
@@ -187,11 +201,13 @@ namespace PortfolioPerformance
         [ExcelFunction(Name = "Beta", Description = "Calculates the Beta (systematic risk) of an Asset", Category = "Portfolio Performance")]
         public static object Beta([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
             double[] assetReturns,
-            [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
-            double[] mktReturns)
-        //Calculate the beta as cov(assetReturns, mktReturns)/var(mktReturns)
-        //The user can either supply just the two sets of returns, or they can subtract the risk-free rate from each when calling the function.
-        //The difference will usually be small, but it might be significant to some.
+    [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
+            double[] mktReturns,
+    [ExcelArgument(Name = "Risk-free Returns", Description = "Range of Risk-free asset Returns", AllowReference = false)]
+            object[] riskFreeReturns)
+        //Calculate the beta as cov(assetReturns-riskFreeReturns, mktReturns-riskFreeReturns)/var(mktReturns-riskFreeReturns)
+        //The user can either supply just the two sets of returns, or all three, or a constant for the risk-FreeReturns.
+        //If riskFreeReturns is a constant or omitted, then it will be extended.
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length < assetReturns.Length)
             //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
@@ -203,13 +219,17 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double cov = Statistics.Covariance_S(assetReturns, mktReturns);
-                    double mktVar = Statistics.Variance_S(mktReturns);
-                    return cov / mktVar;
-                }
-                catch (DivideByZeroException)
-                {
-                    return ExcelError.ExcelErrorDiv0;
+                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double cov = Statistics.Covariance_S(Statistics.ArrayDiff(assetReturns, rf), Statistics.ArrayDiff(mktReturns, rf));
+                    double mktVar = Statistics.Variance_S(Statistics.ArrayDiff(mktReturns, rf));
+                    if (mktVar > 0)
+                    {
+                        return cov / mktVar;
+                    }
+                    else
+                    {
+                        return ExcelError.ExcelErrorDiv0;
+                    }
                 }
                 catch (Exception)
                 {
@@ -218,11 +238,13 @@ namespace PortfolioPerformance
             }
         }
 
+
         [ExcelFunction(Name = "BullBeta", Description = "Calculates the Bull Beta of an Asset (uses only returns when the market is up)", Category = "Portfolio Performance")]
         public static object BullBeta([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
                 double[] assetReturns,
                 [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
-                double[] mktReturns)
+                double[] mktReturns, [ExcelArgument(Name = "Risk-free Returns", Description = "Range of Risk-free asset Returns", AllowReference = false)]
+                object[] riskFreeReturns)
         //This is the same as beta, except that it only looks at those periods where the market portfolio has a positive return.
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length < assetReturns.Length)
@@ -237,21 +259,31 @@ namespace PortfolioPerformance
                 {
                     List<double> mktUpReturns = new List<double>();
                     List<double> assetUpReturns = new List<double>();
+                    List<double> rfUpReturns = new List<double>();
+                    double[] rf = new double[assetReturns.Length];
+
+                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+
                     for (int i = 0; i < mktReturns.Length; i++)
                     {
                         if (mktReturns[i] > 0)
                         {
                             mktUpReturns.Add(mktReturns[i]);
                             assetUpReturns.Add(assetReturns[i]);
+                            rfUpReturns.Add(rf[i]);
                         }
                     }
-                    double cov = Statistics.Covariance_S(assetUpReturns.ToArray(), mktUpReturns.ToArray());
-                    double mktVar = Statistics.Variance_S(mktUpReturns.ToArray());
-                    return cov / mktVar;
-                }
-                catch (DivideByZeroException)
-                {
-                    return ExcelError.ExcelErrorDiv0;
+
+                    if (mktUpReturns.Count == 0)
+                    {
+                        return ExcelError.ExcelErrorValue;
+                    }
+                    else
+                    {
+                        //Get beta using returns only when market is positive
+                        return Beta(assetUpReturns.ToArray(), mktUpReturns.ToArray(),
+                            Statistics.DoubleToObject(rfUpReturns.ToArray()));
+                    }
                 }
                 catch (Exception)
                 {
@@ -264,7 +296,8 @@ namespace PortfolioPerformance
         public static object BearBeta([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
                 double[] assetReturns,
         [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
-                double[] mktReturns)
+                double[] mktReturns, [ExcelArgument(Name = "Risk-free Returns", Description = "Range of Risk-free asset Returns", AllowReference = false)]
+                object[] riskFreeReturns)
         //This is the same as beta, except that it only looks at those periods where the market portfolio has a negative return.
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length < assetReturns.Length)
@@ -279,21 +312,30 @@ namespace PortfolioPerformance
                 {
                     List<double> mktDownReturns = new List<double>();
                     List<double> assetDownReturns = new List<double>();
+                    List<double> rfDownReturns = new List<double>();
+                    double[] rf = new double[assetReturns.Length];
+
+                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     for (int i = 0; i < mktReturns.Length; i++)
                     {
                         if (mktReturns[i] < 0)
                         {
                             mktDownReturns.Add(mktReturns[i]);
                             assetDownReturns.Add(assetReturns[i]);
+                            rfDownReturns.Add(rf[i]);
                         }
                     }
-                    double cov = Statistics.Covariance_S(assetDownReturns.ToArray(), mktDownReturns.ToArray());
-                    double mktVar = Statistics.Variance_S(mktDownReturns.ToArray());
-                    return cov / mktVar;
-                }
-                catch (DivideByZeroException)
-                {
-                    return ExcelError.ExcelErrorDiv0;
+
+                    if (mktDownReturns.Count == 0)
+                    {
+                        return ExcelError.ExcelErrorValue;
+                    }
+                    else
+                    {
+                        //Get beta using returns only when market is negative
+                        return Beta(assetDownReturns.ToArray(), mktDownReturns.ToArray(),
+                            Statistics.DoubleToObject(rfDownReturns.ToArray()));
+                    }
                 }
                 catch (Exception)
                 {
@@ -309,7 +351,8 @@ namespace PortfolioPerformance
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
             double[] assetReturns,
             [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
-            double[] mktReturns)
+            double[] mktReturns, [ExcelArgument(Name = "Risk-free Returns", Description = "Range of Risk-free asset Returns", AllowReference = false)]
+            object[] riskFreeReturns)
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length != assetReturns.Length)
             //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
@@ -321,13 +364,16 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double bullB = (double)BullBeta(assetReturns, mktReturns);
-                    double bearB = (double)BearBeta(assetReturns, mktReturns);
-                    return bullB / bearB;
-                }
-                catch (DivideByZeroException)
-                {
-                    return ExcelError.ExcelErrorDiv0;
+                    double bullB = (double)BullBeta(assetReturns, mktReturns, riskFreeReturns);
+                    double bearB = (double)BearBeta(assetReturns, mktReturns, riskFreeReturns);
+                    if (Math.Abs(bearB) > 0.0d)
+                    {
+                        return bullB / bearB;
+                    }
+                    else
+                    {
+                        return ExcelError.ExcelErrorDiv0;
+                    }
                 }
                 catch
                 {
@@ -342,7 +388,7 @@ namespace PortfolioPerformance
             [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
             double[] mktReturns,
             [ExcelArgument(Name = "Risk-free Asset Returns", Description = "Range of Risk-free Returns", AllowReference = false)]
-            double[] riskFreeReturns)
+            object[] riskFreeReturns)
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && (mktReturns.Length != assetReturns.Length || mktReturns.Length != riskFreeReturns.Length || assetReturns.Length != riskFreeReturns.Length))
             //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
@@ -354,11 +400,13 @@ namespace PortfolioPerformance
             {
                 try
                 {
+                    double[] rf = new double[assetReturns.Length];
+                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns,assetReturns.Length));
                     double assetMean = assetReturns.Average();
-                    double rfMean = riskFreeReturns.Average();
+                    double rfMean = rf.Average();
                     double mktMean = mktReturns.Average();
-                    double assetbeta = (double)Beta(assetReturns, mktReturns);
-                    return (assetMean - rfMean) - assetbeta * (mktMean - rfMean);
+                    double assetBeta = (double)Beta(assetReturns, mktReturns, Statistics.DoubleToObject(rf));
+                    return (assetMean - rfMean) - assetBeta * (mktMean - rfMean);
                 }
                 catch (Exception)
                 {
@@ -367,17 +415,6 @@ namespace PortfolioPerformance
             }
 
         }
-
-
-        ////Fake function to test object[] argument. This returns an array of values that we can go through and test.
-        //[ExcelFunction(Name = "GetVals", Description = "Returns a value from a range",
-        //    Category = "Portfolio Performance")]
-        //public static object GetVals([ExcelArgument(Description = "Rng", AllowReference = false)]
-        //    object[] rng)
-        //{
-        //    return rng[8];
-        //}
-
 
         //[ExcelFunction(Name = "ReturnArray", Description = "Test Function for returning an array", Category = "Portfolio Performance")]
         //public static object[,] ReturnArray()
