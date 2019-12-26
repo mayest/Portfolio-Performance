@@ -1,5 +1,5 @@
 # Risk-Adjusted Portfolio Performance Measures
-Excel Add-in<br>Created in C# with [Excel-DNA](https://github.com/Excel-DNA/ExcelDna)<br>Author: Timothy R. Mayes, Ph.D.<br>Version: 0.1<br>Date: 23 December 2019
+Excel Add-in<br>Created in C# with [Excel-DNA](https://github.com/Excel-DNA/ExcelDna)<br>Author: Timothy R. Mayes, Ph.D.<br>Version: 0.1<br>Date: 25 December 2019
 
 # Purpose
 This Excel add-in (an .xll file) contains functions that calculate common risk-adjusted performance measures. Required arguments typically include a series of asset/portfolio returns, market/benchmark portfolio (e.g., S&P 500) returns, and risk-free asset (e.g., U.S. Treasury security) returns.
@@ -8,6 +8,7 @@ This Excel add-in (an .xll file) contains functions that calculate common risk-a
 Purpose|Function Name and Arguments
 -------|---------------------------
 Sharpe Ratio|SharpeRatio(Asset Returns, Risk-Free Returns)
+Revised Sharpe Ratio|RevisedSharpeRatio(Asset Returns, Risk-Free Returns)
 M-Squared (i.e., the Modigliani & Modigliani measure)|MSquared(Asset Returns, Market Returns, Risk-Free Returns)
 Information Ratio|InformationRatio(Asset Returns, Benchmark Returns)
 Treynor Index|TreynorIndex(Asset Returns, Risk-Free Returns, Asset Beta)
@@ -17,6 +18,7 @@ Bull Beta (beta in up markets)|BullBeta(Asset Returns, Market Returns)
 Bear Beta (beta in down markets)|BearBeta(Asset Returns, Market Returns)
 Beta Timing Ratio (ratio of bull beta to bear beta)|BetaTimingRatio(Asset Returns, Market Returns)
 Jensen's Alpha|JensensAlpha(Asset Returns, Market Returns, Risk-Free Returns)
+Fama's Decomposition|FamaDecomposition(Asset Returns, Market Returns, Risk-Free Returns, Target Beta)
 
 # Installation
 The add-in .xll file can be installed in Microsoft Excel on the Windows platform (not available for Mac) in the usual way. Go to File -> Options -> Add-ins and then click the Go button at the bottom of the dialog box. Click the Browse button and select the .xll file from the directory where you saved it. From this point on, the add-in will be loaded automatically every time that you start Excel.
