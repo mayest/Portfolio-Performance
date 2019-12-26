@@ -111,6 +111,7 @@ namespace PortfolioPerformance
 
             // Check if riskFreeReturns is given or not. If not, set it to 0 for each period.
             // If it is only a single number, then set it to that number for each period.
+            // If there is more than one number, but less than length, then set it to the first number.
             if (rfArray.Length != length)
             {
                 double tempRf;
@@ -120,7 +121,7 @@ namespace PortfolioPerformance
                 }
                 else
                 {
-                    tempRf = (double) rfArray[0]; //Otherwise, set it to the given number
+                    tempRf = (double) rfArray[0]; //Otherwise, set it to the first number
                 }
 
                 for (int i = 0; i < newRf.Length; i++)
@@ -132,7 +133,7 @@ namespace PortfolioPerformance
             }
             else
             {
-                return rfArray;
+                return rfArray; //If it matches length, then just return it unchanged
             }
         }
     }
