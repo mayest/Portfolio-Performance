@@ -169,7 +169,6 @@ namespace PortfolioPerformance
                     return ExcelError.ExcelErrorValue;
                 }
             }
-
         }
 
         [ExcelFunction(Name = "TrackingError", Description = "Calculates the tracking error of an asset vs its benchmark", Category = "Portfolio Performance")]
@@ -196,7 +195,6 @@ namespace PortfolioPerformance
                     return ExcelError.ExcelErrorValue;
                 }
             }
-
         }
 
         [ExcelFunction(Name = "TreynorIndex", Description = "Calculates the Treynor Index for a set of asset returns",
@@ -284,6 +282,33 @@ namespace PortfolioPerformance
             }
         }
 
+
+        [ExcelFunction(Name = "AdjustedBeta", Description = "Calculates beta using Blume's Adjustment for the tendency to revert towards 1.00", Category = "Portfolio Performance")]
+        public static object AdjustedBeta([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
+            double[] assetReturns,
+            [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)]
+            double[] mktReturns,
+            [ExcelArgument(Name = "Risk-free Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)]
+            object[] riskFreeReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length != assetReturns.Length)
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    return (double)Beta(assetReturns, mktReturns, riskFreeReturns) * 2.0d / 3.0d + 1.0d/3.0d;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+        }
 
         [ExcelFunction(Name = "BullBeta", Description = "Calculates the Bull Beta of an Asset (uses only returns when the market is up)", Category = "Portfolio Performance")]
         public static object BullBeta([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
@@ -457,10 +482,8 @@ namespace PortfolioPerformance
                     return ExcelError.ExcelErrorValue;
                 }
             }
-
         }
-
-
+        
         [ExcelFunction(Name = "FamaDecomposition", Description = "Returns an array with Fama's decomposition of the excess return", Category = "Portfolio Performance")]
         public static object FamaDecomposition([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)]
             double[] assetReturns,
@@ -527,7 +550,6 @@ namespace PortfolioPerformance
                     return ExcelError.ExcelErrorValue;
                 }
             }
-
         }
 
 

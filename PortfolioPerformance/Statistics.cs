@@ -9,7 +9,7 @@ namespace PortfolioPerformance
 {
     class Statistics
     {
-        public static double Covar_P(double[] data1, double[] data2) //Population Covariance
+        public static double Covariance_P(double[] data1, double[] data2) //Population Covariance
         {
             try
             {
@@ -33,7 +33,7 @@ namespace PortfolioPerformance
         public static double Covariance_S(double[] data1, double[] data2) //Sample Covariance
         {
             double n = data1.Length;
-            return Covar_P(data1, data2) * n / (n - 1); //adjust population covariance to sample covariance
+            return Covariance_P(data1, data2) * n / (n - 1); //adjust population covariance to sample covariance
         }
 
         public static double Variance_P(double[] data) //Population Variance
