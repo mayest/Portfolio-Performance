@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using ExcelDna.Integration;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ExcelDna.Integration;
 
 namespace PortfolioPerformance
 {
@@ -24,9 +21,9 @@ namespace PortfolioPerformance
 
                 return accumulator / n;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -85,7 +82,7 @@ namespace PortfolioPerformance
             double[] retArray = new double[n];
             for (int i = 0; i < n; i++)
             {
-                retArray[i] = (double) arr[i];
+                retArray[i] = (double)arr[i];
             }
 
             return retArray;
@@ -105,7 +102,7 @@ namespace PortfolioPerformance
 
 
         public static object[] ExtendRiskFreeRateArray(object[] rfArray, int length)
-            //Extend the risk-free rate array to the given length
+        //Extend the risk-free rate array to the given length
         {
             object[] newRf = new object[length]; //New temporary array
 
@@ -121,7 +118,7 @@ namespace PortfolioPerformance
                 }
                 else
                 {
-                    tempRf = (double) rfArray[0]; //Otherwise, set it to the first number
+                    tempRf = (double)rfArray[0]; //Otherwise, set it to the first number
                 }
 
                 for (int i = 0; i < newRf.Length; i++)

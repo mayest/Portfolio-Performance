@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExcelAddIn.cs" />
     <Compile Include="PerfMeasures.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

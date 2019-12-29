@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<DnaLibrary Name="PortfolioPerformance Add-In" RuntimeVersion="v4.0" xmlns="http://schemas.excel-dna.net/addin/2018/05/dnalibrary">
+<DnaLibrary Name="PortfolioPerformance" RuntimeVersion="v4.0" xmlns="http://schemas.excel-dna.net/addin/2018/05/dnalibrary">
   <ExternalLibrary Path="PortfolioPerformance.dll" ExplicitExports="false" LoadFromBytes="true" Pack="true" IncludePdb="false" />
 
   <!--
@@ -20,4 +20,6 @@
        Excel-DNA also allows the XML for ribbon UI extensions to be specified in the .dna file.
        See the main Excel-DNA site at http://excel-dna.net for downloads of the full distribution.
   -->
+ 
+    <Reference Path="ExcelDna.IntelliSense.dll" Pack="true" />
 </DnaLibrary>
