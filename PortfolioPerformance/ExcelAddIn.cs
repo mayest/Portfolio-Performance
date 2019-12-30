@@ -8,6 +8,7 @@ using ExcelDna.IntelliSense;
 
 namespace PortfolioPerformance
 {
+#if !DEBUG
     class ExcelAddIn : IExcelAddIn
     {
         public void AutoOpen()
@@ -22,4 +23,5 @@ namespace PortfolioPerformance
             IntelliSenseServer.Uninstall();
         }
     }
+#endif
 }

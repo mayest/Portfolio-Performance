@@ -476,43 +476,60 @@ namespace PortfolioPerformance
                     short nOutputs = new short();
                     if (targetBeta is ExcelMissing)
                     {
-                        nOutputs = 3;
+                        nOutputs = 8;
                     }
                     else
                     {
-                        nOutputs = 7;
+                        nOutputs = 10;
                     }
                     object[,] outputArray = new object[nOutputs, 2];
                     double[] rf = new double[assetReturns.Length];
                     rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double assetMean = assetReturns.Average();
+                    double assetSD = Statistics.StdDev_S(assetReturns);
                     double mktMean = mktReturns.Average();
+                    double mktSD = Statistics.StdDev_S(mktReturns);
                     double rfMean = rf.Average();
-                    double beta = (double)Beta(assetReturns, mktReturns, Statistics.DoubleToObject(rf));
+                    double beta = (double)Beta(assetReturns, mktReturns, new[] { (object)0.0d });//Calculate beta without subtracting the risk-free rate
+                    double hypBeta = assetSD / mktSD;//Hypothetical beta (i.e., beta if portfolio was perfectly diversified and therefore has perfect correlation with market)
+                    double hypReturn = rfMean + hypBeta * (mktMean - rfMean);//Expected return based on hypothetical beta
+                    double hypRiskPremium = hypReturn - rfMean;
 
                     double totalRiskPremium = assetMean - rfMean;
                     double rpDueToRisk = beta * (mktMean - rfMean);
                     double rpDueToSelectivity = assetMean - rfMean - rpDueToRisk;
+                    double diversification = (mktSD / assetSD - beta) * (mktMean - rfMean);
+                    double netSelectivity = rpDueToSelectivity - diversification;
 
-                    outputArray[0, 0] = "Risk Premium"; outputArray[0, 1] = totalRiskPremium;
-                    outputArray[1, 0] = "Due to Risk"; outputArray[1, 1] = rpDueToRisk;
-                    outputArray[2, 0] = "Due to Selectivity"; outputArray[2, 1] = rpDueToSelectivity;
-                    if (nOutputs == 3)
+                    if (nOutputs == 8)
                     {
+                        outputArray[0, 0] = "Risk Premium"; outputArray[0, 1] = totalRiskPremium;
+                        outputArray[1, 0] = "Due to Risk"; outputArray[1, 1] = rpDueToRisk;
+                        outputArray[2, 0] = "Due to Selectivity"; outputArray[2, 1] = rpDueToSelectivity;
+                        outputArray[3, 0] = "Diversification"; outputArray[3, 1] = diversification;
+                        outputArray[4, 0] = "Net Selectivity"; outputArray[4, 1] = netSelectivity;
+                        outputArray[5, 0] = "Hypothetical Beta"; outputArray[5, 1] = hypBeta;
+                        outputArray[6, 0] = "Hypothetical Exp Return"; outputArray[6, 1] = hypReturn;
+                        outputArray[7, 0] = "Hypothetical Risk Premium"; outputArray[7, 1] = hypRiskPremium;
                         return outputArray;
                     }
                     else
                     {
+                        // Here we have a target beta, so we can decompose risk premium due to risk
                         double invRisk = (double)targetBeta * (mktMean - rfMean);
                         double mgrRisk = (beta - (double)targetBeta) * (mktMean - rfMean);
-                        double diversification =
-                            (Statistics.StdDev_S(mktReturns) / Statistics.StdDev_S(assetReturns) - beta) * (mktMean - rfMean);
-                        double netSelectivity = rpDueToSelectivity - diversification;
 
-                        outputArray[3, 0] = "Due to Investor's Risk"; outputArray[3, 1] = invRisk;
-                        outputArray[4, 0] = "Due to Manager's Risk"; outputArray[4, 1] = mgrRisk;
+                        outputArray[0, 0] = "Risk Premium"; outputArray[0, 1] = totalRiskPremium;
+                        outputArray[1, 0] = "Due to Risk"; outputArray[1, 1] = rpDueToRisk;
+                        outputArray[2, 0] = "Due to Investor's Risk"; outputArray[2, 1] = invRisk;
+                        outputArray[3, 0] = "Due to Manager's Risk"; outputArray[3, 1] = mgrRisk;
+                        outputArray[4, 0] = "Due to Selectivity"; outputArray[4, 1] = rpDueToSelectivity;
                         outputArray[5, 0] = "Diversification"; outputArray[5, 1] = diversification;
                         outputArray[6, 0] = "Net Selectivity"; outputArray[6, 1] = netSelectivity;
+                        outputArray[7, 0] = "Hypothetical Beta"; outputArray[7, 1] = hypBeta;
+                        outputArray[8, 0] = "Hypothetical Exp Return"; outputArray[8, 1] = hypReturn;
+                        outputArray[9, 0] = "Hypothetical Risk Premium"; outputArray[9, 1] = hypRiskPremium;
+                        
                         return outputArray;
                     }
                 }
