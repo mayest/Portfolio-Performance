@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static PortfolioPerformance.Statistics;
 
 namespace PortfolioPerformance
 {
@@ -23,10 +24,10 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double[] assetRets = Statistics.ObjToDouble(assetReturns);
+                    double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double[] assetRets = ObjToDouble(assetReturns);
                     double assetMean = assetRets.Average();
-                    double assetSd = Statistics.StdDev_S(assetRets);
+                    double assetSd = StdDev_S(assetRets);
                     double rfMean = rf.Average();
                     if (Math.Abs(assetSd) > 0.0d)
                     {
@@ -61,10 +62,10 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double[] assetRets = Statistics.ObjToDouble(assetReturns);
+                    double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double[] assetRets = ObjToDouble(assetReturns);
                     double assetMean = assetRets.Average();
-                    double diffSd = Statistics.StdDev_S(Statistics.ArrayDiff(assetRets, rf));
+                    double diffSd = StdDev_S(ArrayDiff(assetRets, rf));
                     double rfMean = rf.Average();
                     if (Math.Abs(diffSd) > 0.0d)
                     {
@@ -102,10 +103,10 @@ namespace PortfolioPerformance
                 try
                 {
                     double assetMean = assetReturns.Average();
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double rfMean = rf.Average();
-                    double mktStdDev = Statistics.StdDev_S(mktReturns);
-                    double assetStdDev = Statistics.StdDev_S(assetReturns);
+                    double mktStdDev = StdDev_S(mktReturns);
+                    double assetStdDev = StdDev_S(assetReturns);
                     if (Math.Abs(assetStdDev) > 0.0d)
                     {
                         return (mktStdDev / assetStdDev) * (assetMean - rfMean) + rfMean;
@@ -138,8 +139,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] diffArray = Statistics.ArrayDiff(assetReturns, benchReturns);
-                    double trackingError = Statistics.StdDev_S(diffArray);
+                    double[] diffArray = ArrayDiff(assetReturns, benchReturns);
+                    double trackingError = StdDev_S(diffArray);
                     if (Math.Abs(trackingError) > 0.0d)
                     {
                         return diffArray.Average() / trackingError;
@@ -171,8 +172,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] diffArray = Statistics.ArrayDiff(assetReturns, benchReturns);
-                    return Statistics.StdDev_S(diffArray);
+                    double[] diffArray = ArrayDiff(assetReturns, benchReturns);
+                    return StdDev_S(diffArray);
                 }
                 catch (Exception)
                 {
@@ -204,7 +205,7 @@ namespace PortfolioPerformance
                     }
                     else
                     {
-                        double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                        double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                         double assetMean = assetReturns.Average();
                         double rfMean = rf.Average();
                         if (Math.Abs((double)assetBeta) > 0.0d)
@@ -228,8 +229,7 @@ namespace PortfolioPerformance
         [ExcelFunction(Name = "Beta", Description = "Calculates the Beta (systematic risk) of an Asset", Category = "Portfolio Performance")]
         public static object Beta(
                 [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
-                [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns,
-                [ExcelArgument(Name = "Risk-free Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns)
+                [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns)
         //Calculate the beta as cov(assetReturns-riskFreeReturns, mktReturns-riskFreeReturns)/var(mktReturns-riskFreeReturns)
         //The user can either supply just the two sets of returns, or all three, or a constant for the risk-FreeReturns.
         //If riskFreeReturns is a constant or omitted, then it will be extended.
@@ -244,9 +244,9 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double cov = Statistics.Covariance_S(Statistics.ArrayDiff(assetReturns, rf), Statistics.ArrayDiff(mktReturns, rf));
-                    double mktVar = Statistics.Variance_S(Statistics.ArrayDiff(mktReturns, rf));
+                    //double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double cov = Covariance_S(assetReturns, mktReturns);
+                    double mktVar = Variance_S(mktReturns);
                     if (mktVar > 0)
                     {
                         return cov / mktVar;
@@ -267,8 +267,7 @@ namespace PortfolioPerformance
         [ExcelFunction(Name = "AdjustedBeta", Description = "Calculates beta using Blume's Adjustment for the tendency to revert towards 1.00", Category = "Portfolio Performance")]
         public static object AdjustedBeta(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
-            [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns,
-            [ExcelArgument(Name = "Risk-free Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns)
+            [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns)
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length != assetReturns.Length)
             //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
@@ -280,7 +279,7 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    return (double)Beta(assetReturns, mktReturns, riskFreeReturns) * 2.0d / 3.0d + 1.0d / 3.0d;
+                    return (double)Beta(assetReturns, mktReturns) * 2.0d / 3.0d + 1.0d / 3.0d;
                 }
                 catch (Exception)
                 {
@@ -292,8 +291,7 @@ namespace PortfolioPerformance
         [ExcelFunction(Name = "BullBeta", Description = "Calculates the Bull Beta of an Asset (uses only returns when the market is up)", Category = "Portfolio Performance")]
         public static object BullBeta(
                 [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
-                [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns, 
-                [ExcelArgument(Name = "Risk-free Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns)
+                [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns)
         //This is the same as beta, except that it only looks at those periods where the market portfolio has a positive return.
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length != assetReturns.Length)
@@ -308,10 +306,10 @@ namespace PortfolioPerformance
                 {
                     List<double> mktUpReturns = new List<double>();
                     List<double> assetUpReturns = new List<double>();
-                    List<double> rfUpReturns = new List<double>();
+                    //List<double> rfUpReturns = new List<double>();
                     double[] rf = new double[assetReturns.Length];
 
-                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    //rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
 
                     for (int i = 0; i < mktReturns.Length; i++)
                     {
@@ -319,7 +317,7 @@ namespace PortfolioPerformance
                         {
                             mktUpReturns.Add(mktReturns[i]);
                             assetUpReturns.Add(assetReturns[i]);
-                            rfUpReturns.Add(rf[i]);
+                            //rfUpReturns.Add(rf[i]);
                         }
                     }
 
@@ -330,7 +328,7 @@ namespace PortfolioPerformance
                     else
                     {
                         //Get beta using returns only when market is positive
-                        return Beta(assetUpReturns.ToArray(), mktUpReturns.ToArray(), Statistics.DoubleToObject(rfUpReturns.ToArray()));
+                        return Beta(assetUpReturns.ToArray(), mktUpReturns.ToArray());
                     }
                 }
                 catch (Exception)
@@ -343,8 +341,7 @@ namespace PortfolioPerformance
         [ExcelFunction(Name = "BearBeta", Description = "Calculates the Bear Beta of an Asset (uses only returns when the market is down)", Category = "Portfolio Performance")]
         public static object BearBeta(
                 [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
-                [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns, 
-                [ExcelArgument(Name = "Risk-free Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns)
+                [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns)
         //This is the same as beta, except that it only looks at those periods where the market portfolio has a negative return.
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length != assetReturns.Length)
@@ -359,17 +356,17 @@ namespace PortfolioPerformance
                 {
                     List<double> mktDownReturns = new List<double>();
                     List<double> assetDownReturns = new List<double>();
-                    List<double> rfDownReturns = new List<double>();
+                    //List<double> rfDownReturns = new List<double>();
                     double[] rf = new double[assetReturns.Length];
 
-                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    //rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     for (int i = 0; i < mktReturns.Length; i++)
                     {
                         if (mktReturns[i] < 0)
                         {
                             mktDownReturns.Add(mktReturns[i]);
                             assetDownReturns.Add(assetReturns[i]);
-                            rfDownReturns.Add(rf[i]);
+                            //rfDownReturns.Add(rf[i]);
                         }
                     }
 
@@ -380,7 +377,7 @@ namespace PortfolioPerformance
                     else
                     {
                         //Get beta using returns only when market is negative
-                        return Beta(assetDownReturns.ToArray(), mktDownReturns.ToArray(), Statistics.DoubleToObject(rfDownReturns.ToArray()));
+                        return Beta(assetDownReturns.ToArray(), mktDownReturns.ToArray());
                     }
                 }
                 catch (Exception)
@@ -394,8 +391,7 @@ namespace PortfolioPerformance
         //This is the ratio of the bull beta to the bear beta and provides a measure of timing ability.
         public static object BetaTimingRatio(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
-            [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns, 
-            [ExcelArgument(Name = "Risk-free Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns)
+            [ExcelArgument(Name = "Market Returns", Description = "Range of Market Returns", AllowReference = false)] double[] mktReturns)
         {
             if (ExcelDnaUtil.IsInFunctionWizard() && mktReturns.Length != assetReturns.Length)
             //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
@@ -407,8 +403,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double bullB = (double)BullBeta(assetReturns, mktReturns, riskFreeReturns);
-                    double bearB = (double)BearBeta(assetReturns, mktReturns, riskFreeReturns);
+                    double bullB = (double)BullBeta(assetReturns, mktReturns);
+                    double bearB = (double)BearBeta(assetReturns, mktReturns);
                     if (Math.Abs(bearB) > 0.0d)
                     {
                         return bullB / bearB;
@@ -442,11 +438,11 @@ namespace PortfolioPerformance
                 try
                 {
                     double[] rf = new double[assetReturns.Length];
-                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double assetMean = assetReturns.Average();
                     double rfMean = rf.Average();
                     double mktMean = mktReturns.Average();
-                    double assetBeta = (double)Beta(assetReturns, mktReturns,new []{(object)0.0d}); //Calculate beta without subtracting the risk-free rate
+                    double assetBeta = (double)Beta(assetReturns, mktReturns); //Calculate beta without subtracting the risk-free rate
                     return (assetMean - rfMean) - assetBeta * (mktMean - rfMean);
                 }
                 catch (Exception)
@@ -484,13 +480,13 @@ namespace PortfolioPerformance
                     }
                     object[,] outputArray = new object[nOutputs, 2];
                     double[] rf = new double[assetReturns.Length];
-                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double assetMean = assetReturns.Average();
-                    double assetSD = Statistics.StdDev_S(assetReturns);
+                    double assetSD = StdDev_S(assetReturns);
                     double mktMean = mktReturns.Average();
-                    double mktSD = Statistics.StdDev_S(mktReturns);
+                    double mktSD = StdDev_S(mktReturns);
                     double rfMean = rf.Average();
-                    double beta = (double)Beta(assetReturns, mktReturns, new[] { (object)0.0d });//Calculate beta without subtracting the risk-free rate
+                    double beta = (double)Beta(assetReturns, mktReturns);
                     double hypBeta = assetSD / mktSD;//Hypothetical beta (i.e., beta if portfolio was perfectly diversified and therefore has perfect correlation with market)
                     double hypReturn = rfMean + hypBeta * (mktMean - rfMean);//Expected return based on hypothetical beta
                     double hypRiskPremium = hypReturn - rfMean;
@@ -516,6 +512,7 @@ namespace PortfolioPerformance
                     else
                     {
                         // Here we have a target beta, so we can decompose risk premium due to risk
+                        // Populating outputArray separately because we are reordering the output
                         double invRisk = (double)targetBeta * (mktMean - rfMean);
                         double mgrRisk = (beta - (double)targetBeta) * (mktMean - rfMean);
 

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PortfolioPerformance
 {
-    class Statistics
+    public static class Statistics
     {
         public static double Covariance_P(double[] data1, double[] data2) //Population Covariance
         {
