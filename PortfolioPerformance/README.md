@@ -20,6 +20,11 @@ Bear Beta (beta in down markets)|BearBeta(Asset Returns, Market Returns)
 Beta Timing Ratio (ratio of bull beta to bear beta)|BetaTimingRatio(Asset Returns, Market Returns)
 Jensen's Alpha|JensensAlpha(Asset Returns, Market Returns, Risk-Free Returns)
 Fama's Decomposition|FamaDecomposition(Asset Returns, Market Returns, Risk-Free Returns, Target Beta)
+Up Capture Ratio|UpCaptureRatio(Asset Returns, Benchmark Returns)
+Down Capture Ratio|DownCaptureRatio(Asset Returns, Benchmark Returns)
+Up Percentage Ratio|UpPercentageRatio(Asset Returns, Benchmark Returns)
+Down Percentage Ratio|DownPercentageRatio(Asset Returns, Benchmark Returns)
+
 
 # Installation
 The add-in .xll file (most should use PortfolioPerformance.xll, but if you are using 64-bit Excel then use PortfolioPerformance64.xll) can be installed in Microsoft Excel on the Windows platform (not available for Mac) in the usual way. Go to File -> Options -> Add-ins and then click the Go button at the bottom of the dialog box. Click the Browse button and select the .xll file from the directory where you saved it. From this point on, the add-in will be loaded automatically every time that you start Excel.

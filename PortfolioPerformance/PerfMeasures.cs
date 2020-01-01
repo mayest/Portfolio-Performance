@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static PortfolioPerformance.Statistics;
+
 
 namespace PortfolioPerformance
 {
@@ -24,10 +24,10 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double[] assetRets = ObjToDouble(assetReturns);
+                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double[] assetRets = Statistics.ObjToDouble(assetReturns);
                     double assetMean = assetRets.Average();
-                    double assetSd = StdDev_S(assetRets);
+                    double assetSd = Statistics.StdDev_S(assetRets);
                     double rfMean = rf.Average();
                     if (Math.Abs(assetSd) > 0.0d)
                     {
@@ -62,10 +62,10 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double[] assetRets = ObjToDouble(assetReturns);
+                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double[] assetRets = Statistics.ObjToDouble(assetReturns);
                     double assetMean = assetRets.Average();
-                    double diffSd = StdDev_S(ArrayDiff(assetRets, rf));
+                    double diffSd = Statistics.StdDev_S(Statistics.ArrayDiff(assetRets, rf));
                     double rfMean = rf.Average();
                     if (Math.Abs(diffSd) > 0.0d)
                     {
@@ -103,10 +103,10 @@ namespace PortfolioPerformance
                 try
                 {
                     double assetMean = assetReturns.Average();
-                    double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double rfMean = rf.Average();
-                    double mktStdDev = StdDev_S(mktReturns);
-                    double assetStdDev = StdDev_S(assetReturns);
+                    double mktStdDev = Statistics.StdDev_S(mktReturns);
+                    double assetStdDev = Statistics.StdDev_S(assetReturns);
                     if (Math.Abs(assetStdDev) > 0.0d)
                     {
                         return (mktStdDev / assetStdDev) * (assetMean - rfMean) + rfMean;
@@ -139,8 +139,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] diffArray = ArrayDiff(assetReturns, benchReturns);
-                    double trackingError = StdDev_S(diffArray);
+                    double[] diffArray = Statistics.ArrayDiff(assetReturns, benchReturns);
+                    double trackingError = Statistics.StdDev_S(diffArray);
                     if (Math.Abs(trackingError) > 0.0d)
                     {
                         return diffArray.Average() / trackingError;
@@ -172,8 +172,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double[] diffArray = ArrayDiff(assetReturns, benchReturns);
-                    return StdDev_S(diffArray);
+                    double[] diffArray = Statistics.ArrayDiff(assetReturns, benchReturns);
+                    return Statistics.StdDev_S(diffArray);
                 }
                 catch (Exception)
                 {
@@ -205,7 +205,7 @@ namespace PortfolioPerformance
                     }
                     else
                     {
-                        double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                        double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                         double assetMean = assetReturns.Average();
                         double rfMean = rf.Average();
                         if (Math.Abs((double)assetBeta) > 0.0d)
@@ -244,9 +244,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    //double[] rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double cov = Covariance_S(assetReturns, mktReturns);
-                    double mktVar = Variance_S(mktReturns);
+                    double cov = Statistics.Covariance_S(assetReturns, mktReturns);
+                    double mktVar = Statistics.Variance_S(mktReturns);
                     if (mktVar > 0)
                     {
                         return cov / mktVar;
@@ -306,10 +305,6 @@ namespace PortfolioPerformance
                 {
                     List<double> mktUpReturns = new List<double>();
                     List<double> assetUpReturns = new List<double>();
-                    //List<double> rfUpReturns = new List<double>();
-                    double[] rf = new double[assetReturns.Length];
-
-                    //rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
 
                     for (int i = 0; i < mktReturns.Length; i++)
                     {
@@ -317,11 +312,10 @@ namespace PortfolioPerformance
                         {
                             mktUpReturns.Add(mktReturns[i]);
                             assetUpReturns.Add(assetReturns[i]);
-                            //rfUpReturns.Add(rf[i]);
                         }
                     }
 
-                    if (mktUpReturns.Count == 0)
+                    if (mktUpReturns.Count == 0) //No positive returns
                     {
                         return ExcelError.ExcelErrorValue;
                     }
@@ -356,21 +350,17 @@ namespace PortfolioPerformance
                 {
                     List<double> mktDownReturns = new List<double>();
                     List<double> assetDownReturns = new List<double>();
-                    //List<double> rfDownReturns = new List<double>();
-                    double[] rf = new double[assetReturns.Length];
 
-                    //rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     for (int i = 0; i < mktReturns.Length; i++)
                     {
                         if (mktReturns[i] < 0)
                         {
                             mktDownReturns.Add(mktReturns[i]);
                             assetDownReturns.Add(assetReturns[i]);
-                            //rfDownReturns.Add(rf[i]);
                         }
                     }
 
-                    if (mktDownReturns.Count == 0)
+                    if (mktDownReturns.Count == 0) //No negative returns
                     {
                         return ExcelError.ExcelErrorValue;
                     }
@@ -421,6 +411,164 @@ namespace PortfolioPerformance
             }
         }
 
+
+        [ExcelFunction(Name = "UpCaptureRatio", Description = "Returns the ratio of the average asset returns in up markets to the average benchmark return in up markets", Category = "Portfolio Performance")]
+        public static object UpCaptureRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Benchmark Returns", Description = "Range of Benchmark Returns", AllowReference = false)] double[] benchReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && benchReturns.Length != assetReturns.Length)
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    List<double> benchUpReturns = new List<double>();
+                    List<double> assetUpReturns = new List<double>();
+
+                    for (int i = 0; i < benchReturns.Length; i++)
+                    {
+                        if (benchReturns[i]>0)
+                        {
+                            benchUpReturns.Add(benchReturns[i]);
+                            assetUpReturns.Add(assetReturns[i]);
+                        }
+
+                    }
+                    return assetUpReturns.Average()/benchUpReturns.Average();
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "DownCaptureRatio", Description = "Returns the ratio of the average asset returns in down markets to the average benchmark return in down markets", Category = "Portfolio Performance")]
+        public static object DownCaptureRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Benchmark Returns", Description = "Range of Benchmark Returns", AllowReference = false)] double[] benchReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && benchReturns.Length != assetReturns.Length)
+                //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+                //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    List<double> benchDownReturns = new List<double>();
+                    List<double> assetDownReturns = new List<double>();
+
+                    for (int i = 0; i < benchReturns.Length; i++)
+                    {
+                        if (benchReturns[i] < 0)
+                        {
+                            benchDownReturns.Add(benchReturns[i]);
+                            assetDownReturns.Add(assetReturns[i]);
+                        }
+
+                    }
+                    return assetDownReturns.Average() / benchDownReturns.Average();
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "UpPercentageRatio", Description = "Returns the percentage of the time that the portfolio outperforms the benchmark return in up markets", Category = "Portfolio Performance")]
+        public static object UpPercentageRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Benchmark Returns", Description = "Range of Benchmark Returns", AllowReference = false)] double[] benchReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && benchReturns.Length != assetReturns.Length)
+                //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+                //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    List<double> benchUpReturns = new List<double>();
+                    int outPerformCount = 0;
+
+                    //Get returns in positive markets
+                    for (int i = 0; i < benchReturns.Length; i++)
+                    {
+                        if (benchReturns[i] > 0)
+                        {
+                            benchUpReturns.Add(benchReturns[i]);
+                            if (assetReturns[i] > benchReturns[i]) outPerformCount++;
+                        }
+
+                    }
+
+                    return (double)outPerformCount / (double)benchUpReturns.Count;
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "DownPercentageRatio", Description = "Returns the percentage of the time that the portfolio outperforms the benchmark return in down markets", Category = "Portfolio Performance")]
+        public static object DownPercentageRatio(
+    [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+    [ExcelArgument(Name = "Benchmark Returns", Description = "Range of Benchmark Returns", AllowReference = false)] double[] benchReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && benchReturns.Length != assetReturns.Length)
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    List<double> benchDownReturns = new List<double>();
+                    int outPerformCount = 0;
+
+                    //Get returns in negative markets
+                    for (int i = 0; i < benchReturns.Length; i++)
+                    {
+                        if (benchReturns[i] < 0)
+                        {
+                            benchDownReturns.Add(benchReturns[i]);
+                            if (assetReturns[i] > benchReturns[i]) outPerformCount++;
+                        }
+
+                    }
+
+                    return (double)outPerformCount / (double)benchDownReturns.Count;
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
         [ExcelFunction(Name = "JensensAlpha", Description = "Calculates Jensen's alpha for an asset", Category = "Portfolio Performance")]
         public static object JensensAlpha(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
@@ -438,7 +586,7 @@ namespace PortfolioPerformance
                 try
                 {
                     double[] rf = new double[assetReturns.Length];
-                    rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double assetMean = assetReturns.Average();
                     double rfMean = rf.Average();
                     double mktMean = mktReturns.Average();
@@ -480,11 +628,11 @@ namespace PortfolioPerformance
                     }
                     object[,] outputArray = new object[nOutputs, 2];
                     double[] rf = new double[assetReturns.Length];
-                    rf = ObjToDouble(ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
                     double assetMean = assetReturns.Average();
-                    double assetSD = StdDev_S(assetReturns);
+                    double assetSD = Statistics.StdDev_S(assetReturns);
                     double mktMean = mktReturns.Average();
-                    double mktSD = StdDev_S(mktReturns);
+                    double mktSD = Statistics.StdDev_S(mktReturns);
                     double rfMean = rf.Average();
                     double beta = (double)Beta(assetReturns, mktReturns);
                     double hypBeta = assetSD / mktSD;//Hypothetical beta (i.e., beta if portfolio was perfectly diversified and therefore has perfect correlation with market)
@@ -536,6 +684,40 @@ namespace PortfolioPerformance
                 }
             }
         }
+
+        [ExcelFunction(Name = "JarqueBeraTest", Description = "Returns a test statistic that tests for normality", Category = "Portfolio Performance")]
+        public static object JarqueBeraTest([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double n = assetReturns.Length;
+                    if (n > 2)
+                    {
+                        double skew = Statistics.Skewness_P(assetReturns);
+                        double kurtExcess = Statistics.Kurtosis_P_Excess(assetReturns);
+                        return n / 6 * (Math.Pow(skew, 2) + Math.Pow(kurtExcess, 2) / 4);
+                    }
+                    else
+                    {
+                        return ExcelError.ExcelErrorDiv0;
+                    }
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
 
 
     }//End of Class Measures

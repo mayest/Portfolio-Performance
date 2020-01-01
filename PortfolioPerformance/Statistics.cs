@@ -1,11 +1,17 @@
 ﻿using ExcelDna.Integration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Schema;
 
 namespace PortfolioPerformance
 {
-    public static class Statistics
+    /// <summary>
+    /// A class of helper functions, mostly statistics but some converters
+    /// </summary>
+    public class Statistics
     {
+        [ExcelFunction(IsHidden = true)]
         public static double Covariance_P(double[] data1, double[] data2) //Population Covariance
         {
             try
@@ -27,6 +33,7 @@ namespace PortfolioPerformance
             }
         }
 
+        [ExcelFunction(IsHidden = true)]
         public static double Covariance_S(double[] data1, double[] data2) //Sample Covariance
         {
             double n = data1.Length;
@@ -45,27 +52,103 @@ namespace PortfolioPerformance
             return ssq / data.Length;
         }
 
+        [ExcelFunction(IsHidden = true)]
         public static double Variance_S(double[] data) //Sample Variance
         {
             double n = data.Length;
             return Variance_P(data) * n / (n - 1); //adjust population variance to sample variance
         }
 
+        [ExcelFunction(IsHidden = true)]
         public static double StdDev_P(double[] data) //Population Standard Deviation
         {
             return Math.Pow(Variance_P(data), 0.5);
         }
 
+        [ExcelFunction(IsHidden = true)]
         public static double StdDev_S(double[] data) //Sample Standard Deviation
         {
             double n = data.Length;
             return
-                StdDev_P(data) *
-                Math.Pow(n / (n - 1), 0.5); //adjust population standard deviation to sample standard deviation
+                StdDev_P(data) * Math.Pow(n / (n - 1), 0.5); //adjust population standard deviation to sample standard deviation
         }
 
-        public static double[]
-            ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise difference between two equal-length arrays
+        [ExcelFunction(IsHidden = true)]
+        public static double Skewness_P(double[] data)
+        //Calculate population skewness
+        //See https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm
+        {
+            double dataMean = data.Average();
+            double dataSD = StdDev_P(data);
+            double sumCubes = 0;
+            foreach (var d in data)
+            {
+                sumCubes += Math.Pow((d - dataMean) / dataSD, 3);
+            }
+
+            return sumCubes / data.Length;
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double Skewness_S(double[] data)
+        {
+            long length = data.Length;
+            try
+            {
+                return Skewness_P(data) * Math.Sqrt(length*(length-1))/(length-2);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double Kurtosis_P(double[] data)
+        {
+            double dataMean = data.Average();
+            double dataSD = StdDev_P(data);
+            double sumQuads = 0;
+            foreach (var d in data)
+            {
+                sumQuads += Math.Pow((d - dataMean) / dataSD, 4);
+            }
+
+            return sumQuads / data.Length;
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double Kurtosis_P_Excess(double[] data)
+        {
+            return Kurtosis_P(data) - 3;
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double Kurtosis_S(double[] data)
+        {
+            double dataMean = data.Average();
+            double dataSD = StdDev_S(data);
+            double n = data.Length;
+            double sumQuads = 0;
+            foreach (var d in data)
+            {
+                sumQuads += Math.Pow((d - dataMean) / dataSD, 4);
+            }
+
+            return sumQuads * (n*(n+1)/((n-1)*(n-2)*(n-3)));
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double Kurtosis_S_Excess(double[] data)
+        //This is what Excel will return
+        {
+            double n = data.Length;
+            return Kurtosis_S(data) - (3 * Math.Pow(n - 1, 2)/((n - 2) * (n - 3)));
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double[] ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise difference between two equal-length arrays
         {
             double[] diff = new double[arr1.Length];
             for (int i = 0; i < arr1.Length; i++)
@@ -76,6 +159,8 @@ namespace PortfolioPerformance
             return diff;
         }
 
+
+        [ExcelFunction(IsHidden = true)]
         public static double[] ObjToDouble(object[] arr) //Convert an object[] to double[]
         {
             int n = arr.Length;
@@ -88,6 +173,7 @@ namespace PortfolioPerformance
             return retArray;
         }
 
+        [ExcelFunction(IsHidden = true)]
         public static object[] DoubleToObject(double[] arr) //Convert an double[] to object[]
         {
             int n = arr.Length;
@@ -101,6 +187,7 @@ namespace PortfolioPerformance
         }
 
 
+        [ExcelFunction(IsHidden = true)]
         public static object[] ExtendRiskFreeRateArray(object[] rfArray, int length)
         //Extend the risk-free rate array to the given length
         {
