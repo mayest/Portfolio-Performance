@@ -672,7 +672,54 @@ namespace PortfolioPerformance
         }
 
 
-        
+        [ExcelFunction(Name = "BiasRatio", Description = "Calculates the ratio of returns between 0 and +1 standard deviation to those between -1 standard deviation and 0.", Category = "Portfolio Performance")]
+        public static object BiasRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Standard Deviations", Description = "(Optional) Number of Standard Deviations Away from 0%, default is 1", AllowReference = false)] object stdDevs)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double numStdDevs;
+                    int countAbove = 0;
+                    int countBelow = 0;
+
+                    if (stdDevs is ExcelMissing)
+                    {
+                        numStdDevs = 1d;
+                    }
+                    else
+                    {
+                        numStdDevs = (double) stdDevs;
+                    }
+                    double assetSD = Statistics.StdDev_P(assetReturns);
+                    double topRange = numStdDevs * assetSD;
+                    double bottomRange = -numStdDevs * assetSD;
+                    foreach (var ret in assetReturns)
+                    {
+                        if (ret >= 0 && ret <= topRange) countAbove++;
+                        if (ret < 0 && ret >= bottomRange) countBelow++;
+                    }
+                    
+                    return (double)countAbove / (1 + (double)countBelow);
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
         [ExcelFunction(Name = "JensensAlpha", Description = "Calculates Jensen's alpha for an asset", Category = "Portfolio Performance")]
         public static object JensensAlpha(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,

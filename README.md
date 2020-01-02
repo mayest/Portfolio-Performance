@@ -27,6 +27,7 @@ Down Percentage Ratio|DownPercentageRatio(Asset Returns, Benchmark Returns)
 Percentage Gain Ratio|PercentageGainRatio(Asset Returns, Benchmark Returns)
 Percentage Loss Ratio|PercentageLossRatio(Asset Returns, Benchmark Returns)
 Hurst Exponent|HurstExponent(Asset Returns)
+Bias Ratio|BiasRatio(Asset Returns, Standard Deviations)
 
 
 # Installation
