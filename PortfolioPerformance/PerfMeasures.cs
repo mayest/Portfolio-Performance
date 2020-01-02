@@ -569,6 +569,110 @@ namespace PortfolioPerformance
         }
 
 
+        [ExcelFunction(Name = "PercentageGainRatio", Description = "Compares the number of positive asset returns to the number of positive benchmark returns.", Category = "Portfolio Performance")]
+        public static object PercentageGainRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Benchmark Returns", Description = "Range of Benchmark Returns", AllowReference = false)] double[] benchReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && benchReturns.Length != assetReturns.Length)
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double benchPos = 0;
+                    double assetPos = 0;
+                    for (int i = 0; i < assetReturns.Length; i++)
+                    {
+                        if (benchReturns[i] > 0) benchPos++;
+                        if (assetReturns[i] > 0) assetPos++;
+                    }
+
+                    return assetPos / benchPos;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "PercentageLossRatio", Description = "Compares the number of negative asset returns to the number of negative benchmark returns.", Category = "Portfolio Performance")]
+        public static object PercentageLossRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Benchmark Returns", Description = "Range of Benchmark Returns", AllowReference = false)] double[] benchReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard() && benchReturns.Length != assetReturns.Length)
+                //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+                //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double benchNeg = 0;
+                    double assetNeg = 0;
+                    for (int i = 0; i < assetReturns.Length; i++)
+                    {
+                        if (benchReturns[i] < 0) benchNeg++;
+                        if (assetReturns[i] < 0) assetNeg++;
+                    }
+
+                    return assetNeg / benchNeg;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "HurstExponent", Description = "Calculates the Hurst Exponent of a return series.", Category = "Portfolio Performance")]
+        public static object HurstExponent(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double assetMean = assetReturns.Average();
+                    double assetSD = Statistics.StdDev_P(assetReturns);
+                    int n = assetReturns.Length;
+                    List<double> cumulativeDeviations = new List<double>();
+                    double prevDev = 0; //previous return
+                    for (int i = 0; i < assetReturns.Length; i++)
+                    {
+                        cumulativeDeviations.Add(prevDev+(assetReturns[i] - assetMean));
+                        prevDev += assetReturns[i] - assetMean;
+                    }
+                    double maxCD = cumulativeDeviations.Max();
+                    double minCD = cumulativeDeviations.Min();
+                    return Math.Log((maxCD - minCD) / assetSD, Math.E) / Math.Log(n, Math.E);
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
+        
         [ExcelFunction(Name = "JensensAlpha", Description = "Calculates Jensen's alpha for an asset", Category = "Portfolio Performance")]
         public static object JensensAlpha(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
