@@ -24,6 +24,9 @@ Up Capture Ratio|UpCaptureRatio(Asset Returns, Benchmark Returns)
 Down Capture Ratio|DownCaptureRatio(Asset Returns, Benchmark Returns)
 Up Percentage Ratio|UpPercentageRatio(Asset Returns, Benchmark Returns)
 Down Percentage Ratio|DownPercentageRatio(Asset Returns, Benchmark Returns)
+Percentage Gain Ratio|PercentageGainRatio(Asset Returns, Benchmark Returns)
+Percentage Loss Ratio|PercentageLossRatio(Asset Returns, Benchmark Returns)
+Hurst Exponent|HurstExponent(Asset Returns)
 
 
 # Installation
