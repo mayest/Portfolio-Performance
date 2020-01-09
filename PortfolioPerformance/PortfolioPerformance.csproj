@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="ExcelAddIn.cs" />
     <Compile Include="PerfMeasures.cs" />
+    <Compile Include="RiskMeasures.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

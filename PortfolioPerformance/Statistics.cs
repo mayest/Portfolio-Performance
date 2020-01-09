@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Schema;
 
 namespace PortfolioPerformance
 {
     /// <summary>
-    /// A class of helper functions, mostly statistics but some converters
+    /// Purpose: A class of helper functions, mostly statistics but some converters.
+    /// Author: Timothy R. Mayes, Ph.D.
+    /// Date: 25 December 2019
     /// </summary>
     public class Statistics
     {
@@ -40,6 +41,7 @@ namespace PortfolioPerformance
             return Covariance_P(data1, data2) * n / (n - 1); //adjust population covariance to sample covariance
         }
 
+        [ExcelFunction(IsHidden = true)]
         public static double Variance_P(double[] data) //Population Variance
         {
             double ssq = 0; // sum of squares
@@ -71,6 +73,38 @@ namespace PortfolioPerformance
             double n = data.Length;
             return
                 StdDev_P(data) * Math.Pow(n / (n - 1), 0.5); //adjust population standard deviation to sample standard deviation
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double LowerPartialMoment_P(double[] data, double targetReturn, double degree)
+        {
+            double x = 0;
+            foreach (var d in data)
+            {
+                x += Math.Pow(Math.Max(0, targetReturn - d), degree);
+            }
+            return x / data.Length;
+        }
+
+
+        [ExcelFunction(IsHidden = true)]
+        public static double SemiVariance_P(double[] data, double targetReturn)
+        {
+            List<double> belowMean = new List<double>();
+            foreach (var d in data)
+            {
+                if (d < targetReturn)
+                {
+                    belowMean.Add(d);
+                }
+            }
+            return Variance_P(belowMean.ToArray());
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double SemiDeviation_P(double[] data, double targetReturn)
+        {
+            return Math.Sqrt(SemiVariance_P(data, targetReturn));
         }
 
         [ExcelFunction(IsHidden = true)]
@@ -148,12 +182,24 @@ namespace PortfolioPerformance
         }
 
         [ExcelFunction(IsHidden = true)]
-        public static double[] ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise difference between two equal-length arrays
+        public static double[] ArrayDiff(double[] arr1, double[] arr2) //Calculate element-wise arithmetic difference between two equal-length arrays
         {
             double[] diff = new double[arr1.Length];
             for (int i = 0; i < arr1.Length; i++)
             {
                 diff[i] = arr1[i] - arr2[i];
+            }
+
+            return diff;
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double[] ArrayDiffGeom(double[] arr1, double[] arr2) //Calculate element-wise geometric difference between two equal-length arrays
+        {
+            double[] diff = new double[arr1.Length];
+            for (int i = 0; i < arr1.Length; i++)
+            {
+                diff[i] = (1 + arr1[i]) / (1 + arr2[i]) - 1;
             }
 
             return diff;
@@ -219,6 +265,18 @@ namespace PortfolioPerformance
             {
                 return rfArray; //If it matches length, then just return it unchanged
             }
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static double AnnualizedReturn(double[] returns, double frequency)
+        {
+            double cumRet = 1;
+            foreach (var ret in returns)
+            {
+                cumRet *= (1 + ret);
+            }
+
+            return Math.Pow(cumRet, frequency/returns.Length) - 1;
         }
     }
 }
