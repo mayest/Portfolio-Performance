@@ -224,7 +224,7 @@ namespace PortfolioPerformance
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
             [ExcelArgument(Name = "Target Return", Description = "(Optional) The target return. Only returns less than the target are used in the calculation. " +
                                                                  "If omitted, the mean is used as the target.", AllowReference = false)] object target,
-            [ExcelArgument(Name = "Degree", Description = "(Optional)The degree of the LPM (default is 2 for semi-variance). Must be greater than 0.", AllowReference = false)] object degree,
+            [ExcelArgument(Name = "Degree", Description = "(Optional)The degree of the LPM (default is 2 for semi-variance below the target). Must be greater than or equal to 0.", AllowReference = false)] object degree,
             [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
         {
             if (ExcelDnaUtil.IsInFunctionWizard())
@@ -240,7 +240,7 @@ namespace PortfolioPerformance
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
                     double tgt = (target is ExcelMissing) ? assetReturns.Average() : (double)target; //Set the target return, by default mean
                     double deg = (degree is ExcelMissing) ? 2.0d : (double)degree; //Set the target degree, by default 2 for semi-variance
-                    if (deg <= 0)
+                    if (deg < 0)
                     {
                         return ExcelError.ExcelErrorValue;
                     }
@@ -253,6 +253,42 @@ namespace PortfolioPerformance
             }
 
         }
+
+        [ExcelFunction(Name = "UpperPartialMoment", Description = "Calculates a lower partial moment of a set of returns", Category = "Portfolio Performance")]
+        public static object UpperPartialMoment(
+    [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+    [ExcelArgument(Name = "Target Return", Description = "(Optional) The target return. Only returns greater than the target are used in the calculation. " +
+                                                                 "If omitted, the mean is used as the target.", AllowReference = false)] object target,
+    [ExcelArgument(Name = "Degree", Description = "(Optional)The degree of the UPM (default is 2 for semi-variance above the target). Must be greater than or equal to 0.", AllowReference = false)] object degree,
+    [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
+                    double tgt = (target is ExcelMissing) ? assetReturns.Average() : (double)target; //Set the target return, by default mean
+                    double deg = (degree is ExcelMissing) ? 2.0d : (double)degree; //Set the target degree, by default 2 for semi-variance
+                    if (deg < 0)
+                    {
+                        return ExcelError.ExcelErrorValue;
+                    }
+                    return Statistics.UpperPartialMoment_P(assetReturns, tgt, deg) * freq;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
 
         [ExcelFunction(Name = "SemiVariance", Description = "Calculates the semi-variance of a set of returns", Category = "Portfolio Performance")]
         public static object SemiVariance(

@@ -34,8 +34,13 @@ Bias Ratio|BiasRatio(Asset Returns, Standard Deviations)
 Market Risk|MarketRisk(Asset Returns, Benchmark Returns, Data Frequency)
 Unique (Diversifiable)|Risk	UniqueRisk(Asset Returns, Benchmark Returns, Data Frequency)
 Lower Partial Moment|LowerPartialMoment(Asset Returns, Target Return, Degree, Data Frequency)
+Upper Partial Moment|UpperPartialMoment(Asset Returns, Target Return, Degree, Data Frequency)
 Semi-Variance|SemiVariance(Asset Returns, Target Return, Data Frequency)
 Semi-Deviation|SemiDeviation(Asset Returns, Target Return, Data Frequency)
+Jarque-Bera Test|JarqueBeraTest(Asset Returns)
+K Ratio|KRatio(Asset Returns)
+Total Return Index|TotalReturnIndex(Asset Returns, Start Value)
+
 
 # Installation
 The add-in .xll file (most should use PortfolioPerformance.xll, but if you are using 64-bit Excel then use PortfolioPerformance64.xll) can be installed in Microsoft Excel on the Windows platform (not available for Mac) in the usual way. Go to File -> Options -> Add-ins and then click the Go button at the bottom of the dialog box. Click the Browse button and select the .xll file from the directory where you saved it. From this point on, the add-in will be loaded automatically every time that you start Excel.

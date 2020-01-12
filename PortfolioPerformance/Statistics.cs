@@ -86,6 +86,18 @@ namespace PortfolioPerformance
             return x / data.Length;
         }
 
+        [ExcelFunction(IsHidden = true)]
+        public static double UpperPartialMoment_P(double[] data, double targetReturn, double degree)
+        {
+            double x = 0;
+            foreach (var d in data)
+            {
+                x += Math.Pow(Math.Max(0, d - targetReturn), degree);
+            }
+            return x / data.Length;
+        }
+
+
 
         [ExcelFunction(IsHidden = true)]
         public static double SemiVariance_P(double[] data, double targetReturn)

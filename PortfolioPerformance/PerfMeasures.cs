@@ -828,8 +828,8 @@ namespace PortfolioPerformance
             }
         }
 
-        [ExcelFunction(Name = "JarqueBeraTest", Description = "Returns a test statistic that tests for normality", Category = "Portfolio Performance")]
-        public static object JarqueBeraTest(
+        [ExcelFunction(Name = "KRatio", Description = "Calculates Kestner's K Ratio for a series of returns. Higher values suggest more consistency of return.", Category = "Portfolio Performance")]
+        public static object KRatio(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns)
         {
             if (ExcelDnaUtil.IsInFunctionWizard())
@@ -842,17 +842,32 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double n = assetReturns.Length;
-                    if (n > 2)
+                    Int32 n = assetReturns.Length;
+                    double meanPeriod = 0.5 * (n + 1); //Average period number
+                    double periodCountVar = 0;
+                    double meanCumRet = 0;
+                    double[] cumRet = new double[n]; 
+                    double cumCov = 0;
+                    for (int i = 0; i < n; i++) //Build cumulative return series
                     {
-                        double skew = Statistics.Skewness_P(assetReturns);
-                        double kurtExcess = Statistics.Kurtosis_P_Excess(assetReturns);
-                        return n / 6 * (Math.Pow(skew, 2) + Math.Pow(kurtExcess, 2) / 4);
+                        cumRet[i] = (i == 0) ? 0 : (1 + cumRet[i - 1]) * (1 + assetReturns[i]) - 1; //assetReturns[i]
                     }
-                    else
+
+                    meanCumRet = cumRet.Average();
+                    for (int i = 0; i < n; i++)
                     {
-                        return ExcelError.ExcelErrorDiv0;
+                        cumCov += ((cumRet[i] - meanCumRet) * (i + 1 - meanPeriod)) / n;
+                        periodCountVar += Math.Pow(i + 1 - meanPeriod, 2) / n;
                     }
+                    double kBeta = cumCov / periodCountVar;
+                    double kIntercept = meanCumRet - kBeta * meanPeriod;
+                    double[] errSquared = new double[n];
+
+                    for (int i = 0; i < n; i++)
+                    {
+                        errSquared[i] = Math.Pow(cumRet[i] - (kIntercept + kBeta * (i + 1)), 2);
+                    }
+                    return kBeta / Math.Pow(errSquared.Sum() / n, 0.5);
                 }
                 catch (Exception)
                 {
@@ -861,6 +876,42 @@ namespace PortfolioPerformance
             }
 
         }
+
+
+        [ExcelFunction(Name = "TotalReturnIndex", Description = "Creates a total return index from a series of returns and a starting value (returns an array of values)", Category = "Portfolio Performance")]
+        public static object TotalReturnIndex(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Start Value", Description = "(Optional) Initial investment in the asset/portfolio (default is 1)", AllowReference = false)] object startValue)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    Int32 n = assetReturns.Length;
+                    double sValue = (startValue is ExcelMissing) ? 1d : (double)startValue; //Set the starting value
+                    double[] totalReturnIdx = new double[n + 1];
+                    for (int i = 0; i <= n; i++) //Build total return index
+                    {
+                        totalReturnIdx[i] = (i == 0) ? sValue : totalReturnIdx[i - 1] * (1 + assetReturns[i - 1]);
+                    }
+
+                    return totalReturnIdx;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
     }//End of Class Measures
 }//End of Namespace PortfolioPerformance
 
