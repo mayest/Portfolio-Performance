@@ -13,6 +13,33 @@ namespace PortfolioPerformance
     /// </summary>
     public class Measures
     {
+
+        [ExcelFunction(Name = "RoyRatio", Description = "Calculates Roy's Safety First ratio for a set of asset returns", Category = "Portfolio Performance")]
+        public static object RoyRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Minimum Target Return", Description = "(Optional) Range of minimum target returns", AllowReference = false)] object[] minTargetReturns,
+            [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    return SharpeRatio(assetReturns, minTargetReturns, frequency);
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
         [ExcelFunction(Name = "SharpeRatio", Description = "Calculates the Sharpe Ratio for a set of asset returns", Category = "Portfolio Performance")]
         //Calculates the Sharpe Ratio, which is: (average asset return less the average risk-free return)/Std Dev of asset return
         public static object SharpeRatio(
