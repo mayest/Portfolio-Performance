@@ -81,7 +81,11 @@ namespace PortfolioPerformance
             double x = 0;
             foreach (var d in data)
             {
-                x += Math.Pow(Math.Max(0, targetReturn - d), degree);
+                if (d < targetReturn) //Ignore anything >= target return
+                {
+                    x += Math.Pow(Math.Max(0, targetReturn - d), degree);
+                }
+                
             }
             return x / data.Length;
         }
@@ -92,7 +96,11 @@ namespace PortfolioPerformance
             double x = 0;
             foreach (var d in data)
             {
-                x += Math.Pow(Math.Max(0, d - targetReturn), degree);
+                if (d > targetReturn) //Ignore anything <= target return
+                {
+                    x += Math.Pow(Math.Max(0, d - targetReturn), degree);
+                }
+                
             }
             return x / data.Length;
         }
