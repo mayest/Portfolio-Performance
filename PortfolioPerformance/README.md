@@ -41,6 +41,13 @@ Semi-Deviation|SemiDeviation(Asset Returns, Target Return, Data Frequency)
 Jarque-Bera Test|JarqueBeraTest(Asset Returns)
 K Ratio|KRatio(Asset Returns)
 Total Return Index|TotalReturnIndex(Asset Returns, Start Value)
+Maximum Drawdown|MaxDrawDown(Asset Returns)
+Average Drawdown|AverageDrawDown(Asset Returns, Count)
+Maximum Drawdown Duration|MaxDrawDownDuration(Asset Returns)
+Calmar Ratio|CalmarRatio(Asset Returns, Risk-Free Returns, Data Frequency)
+Ulcer Index|UlcerIndex(Asset Returns)
+Ulcer Performance Index|UlcerPerformanceIndex(Asset Returns, Risk-Free Returns, Data Frequency)
+
 
 
 # Installation

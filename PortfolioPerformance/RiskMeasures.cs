@@ -10,7 +10,7 @@ namespace PortfolioPerformance
     /// <summary>
     /// Purpose: This class contains various measures of asset/portfolio risk.
     /// Author: Timothy R. Mayes, Ph.D.
-    /// Date: 25 December 2019
+    /// Date: 16 January 2020
     /// </summary>
     public class RiskMeasures
     {
@@ -30,8 +30,8 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    double cov = Statistics.Covariance_P(assetReturns, mktReturns);
-                    double mktVar = Statistics.Variance_P(mktReturns);
+                    double cov = Helpers.Covariance_P(assetReturns, mktReturns);
+                    double mktVar = Helpers.Variance_P(mktReturns);
                     if (mktVar > 0)
                     {
                         return cov / mktVar;
@@ -181,7 +181,7 @@ namespace PortfolioPerformance
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
                     double beta = (double)Beta(assetReturns, mktReturns);
-                    double mktVariance = Statistics.Variance_P(mktReturns) * freq;
+                    double mktVariance = Helpers.Variance_P(mktReturns) * freq;
                     return Math.Pow(beta, 2) * mktVariance;
                 }
                 catch (Exception)
@@ -208,7 +208,7 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double assetVariance = Statistics.Variance_P(assetReturns) * freq;
+                    double assetVariance = Helpers.Variance_P(assetReturns) * freq;
                     double mktRisk = (double) MarketRisk(assetReturns, mktReturns, (object)freq);
                     return assetVariance - mktRisk;
                 }
@@ -244,7 +244,7 @@ namespace PortfolioPerformance
                     {
                         return ExcelError.ExcelErrorValue;
                     }
-                    return Statistics.LowerPartialMoment_P(assetReturns, tgt, deg) * freq;
+                    return Helpers.LowerPartialMoment_P(assetReturns, tgt, deg) * freq;
                 }
                 catch (Exception)
                 {
@@ -279,7 +279,7 @@ namespace PortfolioPerformance
                     {
                         return ExcelError.ExcelErrorValue;
                     }
-                    return Statistics.UpperPartialMoment_P(assetReturns, tgt, deg) * freq;
+                    return Helpers.UpperPartialMoment_P(assetReturns, tgt, deg) * freq;
                 }
                 catch (Exception)
                 {

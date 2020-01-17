@@ -11,7 +11,7 @@ namespace PortfolioPerformance
     /// <summary>
     /// Purpose: This class contains various tests to check if data follows a normal distribution.
     /// Author: Timothy R. Mayes, Ph.D.
-    /// Date: 25 December 2019
+    /// Date: 16 January 2020
     /// </summary>
 
     public class NormalityTests
@@ -33,8 +33,8 @@ namespace PortfolioPerformance
                     double n = assetReturns.Length;
                     if (n > 2)
                     {
-                        double skew = Statistics.Skewness_P(assetReturns);
-                        double kurtExcess = Statistics.Kurtosis_P_Excess(assetReturns);
+                        double skew = Helpers.Skewness_P(assetReturns);
+                        double kurtExcess = Helpers.Kurtosis_P_Excess(assetReturns);
                         return n / 6 * (Math.Pow(skew, 2) + Math.Pow(kurtExcess, 2) / 4);
                     }
                     else

@@ -9,7 +9,7 @@ namespace PortfolioPerformance
     /// <summary>
     /// Purpose: This class contains various asset/portfolio performance (mostly risk-adjusted) measures.
     /// Author: Timothy R. Mayes, Ph.D.
-    /// Date: 25 December 2019
+    /// Date: 16 January 2020
     /// </summary>
     public class Measures
     {
@@ -58,13 +58,13 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double assetSd = Statistics.StdDev_P(assetReturns) * Math.Sqrt(freq);
+                    double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double assetSd = Helpers.StdDev_P(assetReturns) * Math.Sqrt(freq);
 
                     if (Math.Abs(assetSd) > 0.0d)
                     {
-                        double assetAnnRet = Statistics.AnnualizedReturn(assetReturns, freq);
-                        double riskfreeAnnRet = Statistics.AnnualizedReturn(rf, freq);
+                        double assetAnnRet = Helpers.AnnualizedReturn(assetReturns, freq);
+                        double riskfreeAnnRet = Helpers.AnnualizedReturn(rf, freq);
 
                         return (assetAnnRet - riskfreeAnnRet) / assetSd;
                     }
@@ -100,13 +100,13 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double diffSd = Statistics.StdDev_P(Statistics.ArrayDiff(assetReturns, rf)) * Math.Sqrt(freq);
+                    double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double diffSd = Helpers.StdDev_P(Helpers.ArrayDiff(assetReturns, rf)) * Math.Sqrt(freq);
 
                     if (Math.Abs(diffSd) > 0.0d)
                     {
-                        double assetAnnRet = Statistics.AnnualizedReturn(assetReturns, freq);
-                        double riskfreeAnnRet = Statistics.AnnualizedReturn(rf, freq);
+                        double assetAnnRet = Helpers.AnnualizedReturn(assetReturns, freq);
+                        double riskfreeAnnRet = Helpers.AnnualizedReturn(rf, freq);
 
                         return (assetAnnRet - riskfreeAnnRet) / diffSd;
                     }
@@ -142,8 +142,8 @@ namespace PortfolioPerformance
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
                     double sRatio = (double) SharpeRatio(assetReturns, riskFreeReturns, freq);
-                    double skew = Statistics.Skewness_P(assetReturns);
-                    double kurt = Statistics.Kurtosis_P(assetReturns);
+                    double skew = Helpers.Skewness_P(assetReturns);
+                    double kurt = Helpers.Kurtosis_P(assetReturns);
 
                     return sRatio + skew / 6 * Math.Pow(sRatio, 2) - (kurt - 3) / 24 * Math.Pow(sRatio, 3);
                 }
@@ -176,8 +176,8 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double rf = Statistics.AnnualizedReturn(Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length)), freq);
-                    double mktStdDev = Statistics.StdDev_P(mktReturns) * Math.Sqrt(freq);
+                    double rf = Helpers.AnnualizedReturn(Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length)), freq);
+                    double mktStdDev = Helpers.StdDev_P(mktReturns) * Math.Sqrt(freq);
                     return (double)SharpeRatio(assetReturns, riskFreeReturns, frequency) * mktStdDev + rf;
                 }
                 catch (Exception)
@@ -204,8 +204,8 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double assetAnnualReturn = Statistics.AnnualizedReturn(assetReturns, freq);
-                    double benchAnnualReturn = Statistics.AnnualizedReturn(benchReturns, freq);
+                    double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                    double benchAnnualReturn = Helpers.AnnualizedReturn(benchReturns, freq);
                     double trackingError = (double)TrackingErrorArithmetic(assetReturns, benchReturns, frequency);
                     if (Math.Abs(trackingError) > 0.0d)
                     {
@@ -240,8 +240,8 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double assetAnnualReturn = Statistics.AnnualizedReturn(assetReturns, freq);
-                    double benchAnnualReturn = Statistics.AnnualizedReturn(benchReturns, freq);
+                    double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                    double benchAnnualReturn = Helpers.AnnualizedReturn(benchReturns, freq);
                     double trackingError = (double)TrackingErrorGeometric(assetReturns, benchReturns, frequency);
                     if (Math.Abs(trackingError) > 0.0d)
                     {
@@ -276,8 +276,8 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double[] diffArray = Statistics.ArrayDiff(assetReturns, benchReturns);
-                    return Statistics.StdDev_P(diffArray) * Math.Sqrt(freq);
+                    double[] diffArray = Helpers.ArrayDiff(assetReturns, benchReturns);
+                    return Helpers.StdDev_P(diffArray) * Math.Sqrt(freq);
                 }
                 catch (Exception)
                 {
@@ -303,8 +303,8 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double[] diffArray = Statistics.ArrayDiffGeom(assetReturns, benchReturns);
-                    return Statistics.StdDev_P(diffArray) * Math.Sqrt(freq);
+                    double[] diffArray = Helpers.ArrayDiffGeom(assetReturns, benchReturns);
+                    return Helpers.StdDev_P(diffArray) * Math.Sqrt(freq);
                 }
                 catch (Exception)
                 {
@@ -338,9 +338,9 @@ namespace PortfolioPerformance
                     else
                     {
                         double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                        double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                        double assetAnnualReturn = Statistics.AnnualizedReturn(assetReturns, freq);
-                        double rfAnnualReturn = Statistics.AnnualizedReturn(rf, freq);
+                        double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                        double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                        double rfAnnualReturn = Helpers.AnnualizedReturn(rf, freq);
                         if (Math.Abs((double)assetBeta) > 0.0d)
                         {
                             return (assetAnnualReturn - rfAnnualReturn) / (double)assetBeta;
@@ -657,7 +657,7 @@ namespace PortfolioPerformance
                 try
                 {
                     double assetMean = assetReturns.Average();
-                    double assetSD = Statistics.StdDev_P(assetReturns);
+                    double assetSD = Helpers.StdDev_P(assetReturns);
                     int n = assetReturns.Length;
                     List<double> cumulativeDeviations = new List<double>();
                     double prevDev = 0; //previous return
@@ -697,7 +697,7 @@ namespace PortfolioPerformance
                     int countBelow = 0;
 
                     double numStdDevs = (stdDevs is ExcelMissing) ? 1d : (double)stdDevs;
-                    double assetSD = Statistics.StdDev_P(assetReturns);
+                    double assetSD = Helpers.StdDev_P(assetReturns);
                     double topRange = numStdDevs * assetSD;
                     double bottomRange = -numStdDevs * assetSD;
                     foreach (var ret in assetReturns)
@@ -735,10 +735,10 @@ namespace PortfolioPerformance
                 try
                 {
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double assetAnnualReturn = Statistics.AnnualizedReturn(assetReturns, freq);
-                    double rfAnnualReturn = Statistics.AnnualizedReturn(rf, freq);
-                    double mktAnnualReturn = Statistics.AnnualizedReturn(mktReturns, freq); 
+                    double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                    double rfAnnualReturn = Helpers.AnnualizedReturn(rf, freq);
+                    double mktAnnualReturn = Helpers.AnnualizedReturn(mktReturns, freq); 
                     double assetBeta = (double)RiskMeasures.Beta(assetReturns, mktReturns); 
                     return (assetAnnualReturn - rfAnnualReturn) - assetBeta * (mktAnnualReturn - rfAnnualReturn);
                 }
@@ -798,12 +798,12 @@ namespace PortfolioPerformance
                     double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
                     int nOutputs = (targetBeta is ExcelMissing) ? 8 : 10; //Set number of output cells
                     object[,] outputArray = new object[nOutputs, 2]; //Create an array to hold the outputs
-                    double[] rf = Statistics.ObjToDouble(Statistics.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
-                    double assetAnnualReturn = Statistics.AnnualizedReturn(assetReturns, freq);
-                    double assetStdDev = Statistics.StdDev_P(assetReturns) * Math.Sqrt(freq);
-                    double mktAnnualReturn = Statistics.AnnualizedReturn(mktReturns, freq);
-                    double mktStdDev = Statistics.StdDev_P(mktReturns) * Math.Sqrt(freq);
-                    double rfAnnualReturn = Statistics.AnnualizedReturn(rf, freq);
+                    double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                    double assetStdDev = Helpers.StdDev_P(assetReturns) * Math.Sqrt(freq);
+                    double mktAnnualReturn = Helpers.AnnualizedReturn(mktReturns, freq);
+                    double mktStdDev = Helpers.StdDev_P(mktReturns) * Math.Sqrt(freq);
+                    double rfAnnualReturn = Helpers.AnnualizedReturn(rf, freq);
                     double beta = (double)RiskMeasures.Beta(assetReturns, mktReturns);
                     double hypBeta = assetStdDev / mktStdDev;//Hypothetical beta (i.e., beta if portfolio was perfectly diversified and therefore has perfect correlation with market)
                     double hypReturn = rfAnnualReturn + hypBeta * (mktAnnualReturn - rfAnnualReturn);//Expected return based on hypothetical beta
@@ -869,7 +869,7 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    Int32 n = assetReturns.Length;
+                    Int32 n = assetReturns.Length + 1;
                     double meanPeriod = 0.5 * (n + 1); //Average period number
                     double periodCountVar = 0;
                     double meanCumRet = 0;
@@ -877,7 +877,7 @@ namespace PortfolioPerformance
                     double cumCov = 0;
                     for (int i = 0; i < n; i++) //Build cumulative return series
                     {
-                        cumRet[i] = (i == 0) ? 0 : (1 + cumRet[i - 1]) * (1 + assetReturns[i]) - 1; //assetReturns[i]
+                        cumRet[i] = (i == 0) ? 0 : (1 + cumRet[i - 1]) * (1 + assetReturns[i - 1]) - 1; //assetReturns[i]
                     }
 
                     meanCumRet = cumRet.Average();
@@ -894,7 +894,10 @@ namespace PortfolioPerformance
                     {
                         errSquared[i] = Math.Pow(cumRet[i] - (kIntercept + kBeta * (i + 1)), 2);
                     }
-                    return kBeta / Math.Pow(errSquared.Sum() / n, 0.5);
+
+                    double meanSquareError = errSquared.Sum()/(n - 2);
+                    double stdErrorBeta = Math.Pow(meanSquareError / (periodCountVar * n), 0.5);
+                    return kBeta / stdErrorBeta / Math.Pow(n, 0.5);
                 }
                 catch (Exception)
                 {
@@ -920,15 +923,217 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    Int32 n = assetReturns.Length;
                     double sValue = (startValue is ExcelMissing) ? 1d : (double)startValue; //Set the starting value
-                    double[] totalReturnIdx = new double[n + 1];
-                    for (int i = 0; i <= n; i++) //Build total return index
+                    return Helpers.ConvertToColumnArray(Helpers.GetTotalReturnIndex(assetReturns, sValue));
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
+        [ExcelFunction(Name = "MaxDrawDown", Description = "Calculates the maximum drawdown from a set of returns", Category = "Portfolio Performance")]
+        public static object MaxDrawDown(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    return Helpers.GetDrawDowns(assetReturns).Min();
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "AverageDrawDown", Description = "Returns the average of the largest drawdowns", Category = "Portfolio Performance")]
+        public static object AverageDrawDown(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Count", Description = "(Optional) Number of drawdowns to include in the average. Default is all of them.", AllowReference = false)] object nDrawDowns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double[] continuousDrawDowns = Helpers.GetContinuousDrawDowns(assetReturns);
+                    Int32 n = (nDrawDowns is ExcelMissing) ? continuousDrawDowns.Length : (Int32)Math.Truncate((double)nDrawDowns); //Set the number of drawdowns to use in the average
+                    var nLargest = continuousDrawDowns.Where(x => (double)x < 0).OrderBy(x => (double)x).Take(n);
+                    return nLargest.Average(); //Return average of the n smallest numbers
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "MaxDrawDownDuration", Description = "Calculates the longest amount of time between peaks in asset performance", Category = "Portfolio Performance")]
+        public static object MaxDrawDownDuration(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+                //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+                //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double[] totReturnIndex = Helpers.GetTotalReturnIndex(assetReturns, 1);
+                    double[] peaks = Helpers.GetPeaks(assetReturns);
+                    List<int> peakPeriods = new List<int>();
+                    List<int> peakDurations = new List<int>();
+                    peakPeriods.Add(0);
+                    for (int i = 1; i < totReturnIndex.Length - 1; i++)
                     {
-                        totalReturnIdx[i] = (i == 0) ? sValue : totalReturnIdx[i - 1] * (1 + assetReturns[i - 1]);
+                        if (peaks[i] > peaks[i - 1])
+                        {
+                            peakPeriods.Add(i + 1);//Get the period number of each peak
+                        }
+                    }
+                    if (peakPeriods.Count > 1)
+                    {
+                        double prevMaxPeak = 1d;
+                        int prevMaxPeakPeriod = 0;
+                        for (int i = 1; i < peakPeriods.Count; i++)
+                        {
+                            if (totReturnIndex[peakPeriods[i]] > prevMaxPeak)
+                            {
+                                prevMaxPeak = totReturnIndex[peakPeriods[i]];//Set the prevMaxPeak to this value
+                                peakDurations.Add(peakPeriods[i] - peakPeriods[prevMaxPeakPeriod]);//Calculate periods since last peak
+                                prevMaxPeakPeriod = i;//Set the last peak period to this one
+                            }
+                        }
+
+                        return peakDurations.Max();
+                    }
+                    else
+                    {
+                        return 0d;
                     }
 
-                    return totalReturnIdx;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "UlcerIndex", Description = "Calculates Peter G. Martin's Ulcer Index from a set of asset/portfolio returns", Category = "Portfolio Performance")]
+        public static object UlcerIndex(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double[] drawDowns = Helpers.GetDrawDowns(assetReturns);
+                    double sumSqDd = 0;
+                    //Calculate sum of squared drawdowns.
+                    //Note that this varies slightly from Bacon's result.
+                    //Bacon ignores the initial 0 drawdown, while Martin does not. I match Martin's example exactly.
+                    //See http://www.tangotools.com/ui/UlcerIndex.xls
+
+                    for (int i = 1; i < drawDowns.Length; i++)
+                    {
+                        sumSqDd += drawDowns[i] * drawDowns[i];
+                    }
+
+                    return Math.Pow(sumSqDd / drawDowns.Length, 0.5);
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
+        [ExcelFunction(Name = "UlcerPerformanceIndex", Description = "Similar to the Sharpe ratio, except that it uses the Ulcer Index as the risk measure.", Category = "")]
+        public static object UlcerPerformanceIndex(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Risk-free Asset Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns,
+            [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
+                    double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                    double rfAnnualReturn = Helpers.AnnualizedReturn(rf, freq);
+                    return (assetAnnualReturn - rfAnnualReturn) / (double)UlcerIndex(assetReturns);
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
+        [ExcelFunction(Name = "CalmarRatio", Description = "Calculates the Calmar Ratio for a series of asset returns", Category = "Portfolio Performance")]
+        public static object CalmarRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Risk-free Asset Returns", Description = "(Optional) Range of risk-free asset returns", AllowReference = false)] object[] riskFreeReturns,
+            [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
+                    double[] rf = Helpers.ObjToDouble(Helpers.ExtendRiskFreeRateArray(riskFreeReturns, assetReturns.Length));
+                    double assetAnnualReturn = Helpers.AnnualizedReturn(assetReturns, freq);
+                    double rfAnnualReturn = Helpers.AnnualizedReturn(rf, freq);
+                    double maxDd = (double) MaxDrawDown(assetReturns);
+
+                    return (assetAnnualReturn - rfAnnualReturn) / maxDd;
                 }
                 catch (Exception)
                 {

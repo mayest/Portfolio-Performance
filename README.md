@@ -1,5 +1,5 @@
 # Risk-Adjusted Portfolio Performance Measures
-Excel Add-in<br>Created in C# with [Excel-DNA](https://github.com/Excel-DNA/ExcelDna)<br>Author: Timothy R. Mayes, Ph.D.<br>Version: 0.2<br>Date: 25 December 2019
+Excel Add-in<br>Created in C# with [Excel-DNA](https://github.com/Excel-DNA/ExcelDna)<br>Author: Timothy R. Mayes, Ph.D.<br>Version: 0.2<br>Date: 16 January 2020
 
 # Purpose
 This Excel add-in (an .xll file) contains functions that calculate common risk-adjusted performance measures. Required arguments typically include a series of asset/portfolio returns, market/benchmark portfolio (e.g., S&P 500) returns, and risk-free asset (e.g., U.S. Treasury security) returns.
@@ -41,6 +41,13 @@ Semi-Deviation|SemiDeviation(Asset Returns, Target Return, Data Frequency)
 Jarque-Bera Test|JarqueBeraTest(Asset Returns)
 K Ratio|KRatio(Asset Returns)
 Total Return Index|TotalReturnIndex(Asset Returns, Start Value)
+Maximum Drawdown|MaxDrawDown(Asset Returns)
+Average Drawdown|AverageDrawDown(Asset Returns, Count)
+Maximum Drawdown Duration|MaxDrawDownDuration(Asset Returns)
+Calmar Ratio|CalmarRatio(Asset Returns, Risk-Free Returns, Data Frequency)
+Ulcer Index|UlcerIndex(Asset Returns)
+Ulcer Performance Index|UlcerPerformanceIndex(Asset Returns, Risk-Free Returns, Data Frequency)
+
 
 
 # Installation

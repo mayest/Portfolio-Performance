@@ -54,7 +54,7 @@
     <Compile Include="NormalityTests.cs" />
     <Compile Include="PerfMeasures.cs" />
     <Compile Include="RiskMeasures.cs" />
-    <Compile Include="Statistics.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
