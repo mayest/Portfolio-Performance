@@ -327,7 +327,8 @@ namespace PortfolioPerformance
         }
 
         [ExcelFunction(IsHidden = true)]
-        public static double[] GetDrawDowns(double[] returns) //Returns an array of all drawdowns in the returns series
+        public static double[] GetDrawDowns(double[] returns) 
+            //Returns an array of all drawdowns in the returns series
         {
             Int32 n = returns.Length;
             double[] cumRets = new double[n + 1];
@@ -351,9 +352,8 @@ namespace PortfolioPerformance
         }
 
         [ExcelFunction(IsHidden = true)]
-        public static double[]
-            GetContinuousDrawDowns(
-                double[] returns) //Returns an array containing the maximum drawdowns for each drawdown period in the returns series
+        public static double[] GetContinuousDrawDowns(double[] returns)
+            //Returns an array containing the maximum drawdowns for each drawdown period in the returns series
         {
             //Get the product of each sequence of drawdowns
             double product = 0d;
@@ -371,6 +371,30 @@ namespace PortfolioPerformance
             }
 
             return continuousDrawDowns;
+        }
+
+        [ExcelFunction(IsHidden = true)]
+        public static object[,] SplitToYears(double[] returns, int frequency)
+        //Takes in an array of returns and divides them into years based on the return frequency.
+        //Note that this assumes that the first return is at the start of the year.
+        //The resize method will result in padding the array with zeros.
+        {
+            Int32 remainder = returns.Length % frequency;
+            if (remainder > 0)
+            {
+                Array.Resize(ref returns, returns.Length + frequency - remainder); //Resize to an even multiple of frequency
+            }
+
+            Int32 numSeries = (int)(returns.Length / frequency);
+            object[,] retArray = new object[numSeries, frequency];
+            for (int i = 0; i < numSeries; i++)
+            {
+                for (int j = i * frequency; j < (i * frequency + frequency); j++)
+                {
+                    retArray[i, j - i * frequency] = returns[j];
+                }
+            }
+            return retArray;
         }
 
         [ExcelFunction(IsHidden = true)]
