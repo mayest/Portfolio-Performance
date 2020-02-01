@@ -53,6 +53,7 @@
     <Compile Include="ExcelAddIn.cs" />
     <Compile Include="NormalityTests.cs" />
     <Compile Include="PerfMeasures.cs" />
+    <Compile Include="ReturnMeasures.cs" />
     <Compile Include="RiskMeasures.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

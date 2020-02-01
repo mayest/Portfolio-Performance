@@ -959,7 +959,7 @@ namespace PortfolioPerformance
 
         }
 
-        [ExcelFunction(Name = "AverageDrawDown", Description = "Returns the average of the largest drawdowns", Category = "Portfolio Performance")]
+        [ExcelFunction(Name = "AverageDrawDown", Description = "Returns the average of the Count largest drawdowns", Category = "Portfolio Performance")]
         public static object AverageDrawDown(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
             [ExcelArgument(Name = "Count", Description = "(Optional) Number of drawdowns to include in the average. Default is all of them.", AllowReference = false)] object nDrawDowns)
@@ -976,7 +976,7 @@ namespace PortfolioPerformance
                 {
                     double[] continuousDrawDowns = Helpers.GetContinuousDrawDowns(assetReturns);
                     Int32 n = (nDrawDowns is ExcelMissing) ? continuousDrawDowns.Length : (Int32)Math.Truncate((double)nDrawDowns); //Set the number of drawdowns to use in the average
-                    var nLargest = continuousDrawDowns.Where(x => (double)x < 0).OrderBy(x => (double)x).Take(n);
+                    var nLargest = continuousDrawDowns.OrderBy(x => (double)x).Take(n); //Sort and then take the first n
                     return nLargest.Average(); //Return average of the n smallest numbers
                 }
                 catch (Exception)
@@ -990,7 +990,7 @@ namespace PortfolioPerformance
         [ExcelFunction(Name = "AverageMaxDrawDown", Description = "Returns the average of the annual maximum drawdowns", Category = "Portfolio Performance")]
         public static object AverageMaxDrawDown(
             [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
-            [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+            [ExcelArgument(Name = "Dates", Description = "Range of dates for returns", AllowReference = false)] double[] dates)
         {
             if (ExcelDnaUtil.IsInFunctionWizard())
                 //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
@@ -1002,28 +1002,55 @@ namespace PortfolioPerformance
             {
                 try
                 {
-                    int freq = (frequency is ExcelMissing) ? 1 : Convert.ToInt32(frequency); //Set the frequency
-                    if (assetReturns.Length % freq != 0 || freq == 1)
+                    double[,] annualMaxDrawdown = (double[,])MaxDrawdownByYear(assetReturns, dates);
+                    double[] avgDrawdownByYear = new double[annualMaxDrawdown.GetLength(0)];
+                    for (int i = 0; i < annualMaxDrawdown.GetLength(0); i++)
                     {
-                        //Return error if freq doesn't equally divide the number of asset returns, or if the frequency is 1.
-                        //It is just misleading otherwise.
-                        return ExcelError.ExcelErrorValue;
+                        avgDrawdownByYear[i] = annualMaxDrawdown[i, 1];
                     }
-                    object[,] annRets = Helpers.SplitToYears(assetReturns, freq);
-                    int extension = annRets.Length - assetReturns.Length;
-                    double[] annualReturns = new double[freq];
-                    double[] maxDd = new double[annRets.Length / freq];
-                    for (int i = 0; i < annRets.Length / freq; i++)
+                    return avgDrawdownByYear.Average();
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
+        [ExcelFunction(Name = "MaxDrawdownByYear", Description = "Returns an array of maximum drawdowns for each year in the data", Category = "Portfolio Performance")]
+        public static object MaxDrawdownByYear(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Dates", Description = "Range of dates for returns", AllowReference = false)] double[] dates)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double[] yearArray = Helpers.GetUniqueYears(dates);
+                    double[,] annualMaxDrawdown = new double[yearArray.Length,2];
+                    double[] dateArray = new double[dates.Length];
+                    for (int i = 0; i < dates.Length; i++)
                     {
-                        for (int j = 0; j < freq; j++)
-                        {
-                            annualReturns[j] = (double)annRets[i, j];
-                        }
-
-                        maxDd[i] = (double)MaxDrawDown(annualReturns);
+                        dateArray[i] = DateTime.FromOADate(dates[i]).Year; //Convert dates to years
                     }
-                    return maxDd.Average();
+                    var data = dateArray.Zip(assetReturns, (year, ret) => new { year, ret });
+                    for (int i = 0; i < yearArray.Length; i++)
+                    {
+                        //Get the data for each year, and then calculate the max drawdown for that year
+                        var yearData = data.Where(x => (int)x.year == (int)yearArray[i]).Select(x=>x.ret).ToArray();
+                        annualMaxDrawdown[i, 0] = yearArray[i];
+                        annualMaxDrawdown[i,1] = Helpers.GetDrawDowns(yearData).Min();
+                    }
 
+                    return annualMaxDrawdown;
                 }
                 catch (Exception)
                 {
@@ -1220,6 +1247,73 @@ namespace PortfolioPerformance
             }
 
         }
+
+
+        [ExcelFunction(Name = "OmegaRatio", Description = "Calculates the Omega ratio for a set of asset returns", Category = "Portfolio Performance")]
+        public static object OmegaRatio(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Target Return", Description = "(Optional) The target return. Only returns less than the target are used in the calculation. " +
+                                                                 "If omitted, the mean is used as the target.", AllowReference = false)] object target,
+            [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double upm1 = (double)RiskMeasures.UpperPartialMoment(assetReturns, target, 1d, frequency);
+                    double lpm1 = (double)RiskMeasures.LowerPartialMoment(assetReturns, target, 1d, frequency);
+                    return upm1 / lpm1;
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+
+        [ExcelFunction(Name = "KappaIndex", Description = "Calculates any of a family of Kappa Indices, depending on the Degree", Category = "Portfolio Performance")]
+        public static object KappaIndex(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Target Return", Description = "(Optional) The target return. Only returns less than the target are used in the calculation. " +
+                                                                 "If omitted, the mean is used as the target.", AllowReference = false)] object target,
+            [ExcelArgument(Name = "Degree", Description = "(Optional) The degree of the Kappa Index (default is 1 for the Sortino ratio, use 2 for the Omega-Sharpe ratio). Must be greater than or equal to 0.", AllowReference = false)] object degree,
+            [ExcelArgument(Name = "Data Frequency", Description = "(Optional) Number of periods per year (annual = 1, monthly = 12, etc)", AllowReference = false)] object frequency)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double freq = (frequency is ExcelMissing) ? 1d : (double)frequency; //Set the frequency
+                    double deg = (degree is ExcelMissing) ? 1.0d : (double)degree; //Set the target degree, by default 1 for Sortino ratio
+                    double assetAnnualReturn = assetReturns.Average();
+                    double targetAnnualReturn = (target is ExcelMissing) ? 0d : (double) target; //May want to allow this to be a range, like Sharpe Ratio's risk free returns
+                    double lpm = (double) RiskMeasures.LowerPartialMoment(assetReturns, targetAnnualReturn, degree, frequency);
+
+                    return (assetAnnualReturn - targetAnnualReturn) / Math.Pow(lpm, 1 / deg);
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
 
 
     }//End of Class Measures

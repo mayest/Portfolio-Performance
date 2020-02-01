@@ -343,5 +343,99 @@ namespace PortfolioPerformance
             }
 
         }
+
+        [ExcelFunction(Name = "ParametricVaR", Description = "Calculates Value at Risk assuming normally distributed returns", Category = "Portfolio Performance")]
+        public static object ParametricVaR([ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Confidence Level", Description = "(Optional) The confidence level (e.g., 0.95 for 95%). If omitted, 0.95 is used.", AllowReference = false)] object confLevel)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+                //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+                //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double alpha = (confLevel is ExcelMissing) ? 0.05d : (1 - (double)confLevel); //Set the frequency
+                    return assetReturns.Average() + Helpers.NormalCdfInverse(alpha, 0, 1) * Helpers.StdDev_P(assetReturns); //We add because the inverse cdf will be negative
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "ModifiedParametricVaR", Description = "Calculates parametric Value at Risk adjusted for skewness and kurtosis", Category = "Portfolio Performance")]
+        public static object ModifiedParametricVaR(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Confidence Level", Description = "(Optional) The confidence level (e.g., 0.95 for 95%). If omitted, 0.95 is used.", AllowReference = false)] object confLevel)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+                //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+                //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double alpha = (confLevel is ExcelMissing) ? 0.05d : (1 - (double)confLevel); //Set the alpha
+                    double invCDF = Helpers.NormalCdfInverse(alpha, 0, 1);
+                    double adjFactor = invCDF + ((Math.Pow(invCDF, 2) - 1) / 6) * Helpers.Skewness_P(assetReturns) +
+                                       ((Math.Pow(invCDF, 3) - 3 * invCDF) / 24) * Helpers.Kurtosis_P_Excess(assetReturns) -
+                                       (2 * (Math.Pow(invCDF, 3) - 5 * invCDF) / 36) * Math.Pow(Helpers.Skewness_P(assetReturns), 2);
+
+                    //Note that we use excess kurtosis here:
+                    return assetReturns.Average() + adjFactor * Helpers.StdDev_P(assetReturns); //We add because the inverse cdf will be negative
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
+        [ExcelFunction(Name = "HistoricalSimulationVaR", Description = "Calculates Value at Risk using the historical simulation method", Category = "Portfolio Performance")]
+        public static object HistoricalSimulationVaR(
+            [ExcelArgument(Name = "Asset Returns", Description = "Range of Asset Returns", AllowReference = false)] double[] assetReturns,
+            [ExcelArgument(Name = "Confidence Level", Description = "(Optional) The confidence level (e.g., 0.95 for 95%). If omitted, 0.95 is used.", AllowReference = false)] object confLevel)
+        {
+            if (ExcelDnaUtil.IsInFunctionWizard())
+            //This is required because Function Wizard repeatedly calls the function and will cause an error on partial range entry for second var
+            //The check on lengths means that the Function Wizard will show a correct result when the lengths are equal
+            {
+                return ExcelError.ExcelErrorValue; //Return a placeholder value until both ranges are fully entered
+            }
+            else //Try the calculation
+            {
+                try
+                {
+                    double alpha = (confLevel is ExcelMissing) ? 0.05d : (1 - (double)confLevel); //Set the alpha
+                    Array.Sort(assetReturns);
+                    double targetPos = alpha * (assetReturns.Length + 1) - 1; //Position that we want
+                    if (targetPos < 0 || targetPos > (assetReturns.Length - 1))
+                    {
+                        //Can't interpolate if the position is less than 0 or greater than n - 1.
+                        //Return #NUM! consistent with Percentile.Exc().
+                        return ExcelError.ExcelErrorNum;
+                    }
+                    Int32 nextPos = (Int32)Math.Floor(targetPos); //Nearest integer position less than targetPos
+                    return assetReturns[nextPos] + (assetReturns[nextPos + 1] - assetReturns[nextPos]) * (targetPos - nextPos); //Interpolated result
+
+                }
+                catch (Exception)
+                {
+                    return ExcelError.ExcelErrorValue;
+                }
+            }
+
+        }
+
     }
 }
