@@ -5,9 +5,13 @@ Excel Add-in<br>Created in C# with [Excel-DNA](https://github.com/Excel-DNA/Exce
 Go to the [Releases page](https://github.com/mayest/Portfolio-Performance/releases/latest),
 
 or download directly:
+
 Download the latest regular version:
+
 https://github.com/mayest/Portfolio-Performance/releases/latest/download/PortfolioPerformance.zip
+
 Download the latest 64-bit version (you probably do NOT want this one:
+
 https://github.com/mayest/Portfolio-Performance/releases/latest/download/PortfolioPerformance64.zip
 
 
