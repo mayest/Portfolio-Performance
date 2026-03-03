@@ -2,7 +2,7 @@
 Excel Add-in<br>Created in C# with [Excel-DNA](https://github.com/Excel-DNA/ExcelDna)<br>Author: Timothy R. Mayes, Ph.D.<br>Version: 0.2<br>Date: 1 February 2020
 
 # Downloads
-Go to the [Releases page](https://github.com/mayest/Portfolio-Performance/releases/tag/v0.2)
+Go to the [Releases page](https://github.com/mayest/Portfolio-Performance/releases/latest)
 
 # Purpose
 This Excel add-in (an .xll file) contains functions that calculate common risk-adjusted performance measures. Required arguments typically include a series of asset/portfolio returns, market/benchmark portfolio (e.g., S&P 500) returns, and risk-free asset (e.g., U.S. Treasury security) returns.
