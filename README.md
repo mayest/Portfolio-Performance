@@ -6,14 +6,13 @@ Go to the [Releases page](https://github.com/mayest/Portfolio-Performance/releas
 
 or download directly:
 
-Download the latest regular version:
-
-https://github.com/mayest/Portfolio-Performance/releases/latest/download/PortfolioPerformance.zip
-
-Download the latest 64-bit version (you probably do NOT want this one:
+Download the latest 64-bit version:
 
 https://github.com/mayest/Portfolio-Performance/releases/latest/download/PortfolioPerformance64.zip
 
+Download the latest 32-bit version (only if you know for sure that you are on 32-bit Excel):
+
+https://github.com/mayest/Portfolio-Performance/releases/latest/download/PortfolioPerformance.zip
 
 # Purpose
 This Excel add-in (an .xll file) contains functions that calculate common risk-adjusted performance measures. Required arguments typically include a series of asset/portfolio returns, market/benchmark portfolio (e.g., S&P 500) returns, and risk-free asset (e.g., U.S. Treasury security) returns.
